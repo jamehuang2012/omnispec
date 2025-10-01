@@ -31,7 +31,7 @@
                 
                 <div class="control-group">
                     <label for="transactionType">Transaction Type:</label>
-                    <select id="transactionType">
+                    <select id="transactionType" onchange="handleTransactionTypeChange()">
                         <option value="Sale">SALE</option>
                         <option value="MOTO">MOTO</option>
                         <option value="Crypto">CRYPTO</option>
@@ -46,12 +46,12 @@
                     </select>
                 </div>
                 
-                <div class="control-group">
+                <div class="control-group" data-field="tip">
                     <label for="tip">TIP:</label>
                     <input type="number" id="tip" value="0.00" step="0.01" min="0">
                 </div>
                 
-                <div class="control-group">
+                <div class="control-group" data-field="reportType" style="display: none;">
                     <label for="reportType">Report Type:</label>
                     <select id="reportType">
                         <option value="Terminal Detail Report">Terminal Detail Report</option>

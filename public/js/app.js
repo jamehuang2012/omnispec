@@ -233,6 +233,28 @@ function renderBasicTypes() {
     });
 }
 
+// Handle transaction type changes to show/hide conditional fields
+window.handleTransactionTypeChange = function() {
+    const transactionType = document.getElementById('transactionType').value;
+    const tipGroup = document.querySelector('[data-field="tip"]');
+    const reportTypeGroup = document.querySelector('[data-field="reportType"]');
+    
+    // Show TIP only for SALE transactions
+    if (transactionType === 'Sale') {
+        tipGroup.style.display = 'block';
+    } else {
+        tipGroup.style.display = 'none';
+        document.getElementById('tip').value = '0.00'; // Reset tip
+    }
+    
+    // Show Report Type only for REPORT transactions
+    if (transactionType === 'Report') {
+        reportTypeGroup.style.display = 'block';
+    } else {
+        reportTypeGroup.style.display = 'none';
+    }
+};
+
 // Helper function to generate sample values for different types
 function generateValueForType(type) {
     const samples = {
@@ -609,4 +631,5 @@ document.addEventListener('DOMContentLoaded', () => {
     renderDataTypes();
     renderBasicTypes();
     generateJSON();
+    handleTransactionTypeChange(); // Set initial field visibility
 });
