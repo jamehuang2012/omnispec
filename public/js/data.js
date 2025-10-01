@@ -56,103 +56,84 @@ export const basicDataTypes = {
 
 // Data Types Definitions
 export const dataTypes = {
-    'ST-MessageFunction': { 
-        type: 'CodeSet', 
-        codeSet: 'CS-MessageFunction', 
-        length: '{4}', 
-        desc: 'Message type identifier' 
-    },
-    'ST-ProtocolVersion': { 
-        type: 'TextString', 
-        length: '[3,6]', 
-        desc: 'Version MM.mm',
-        baseType: 'TextString'
-    },
-    'ST-ExchangeIdentification': { 
-        type: 'UUID', 
-        length: '{36}', 
-        desc: 'Unique transaction UUID',
-        baseType: 'UUID'
-    },
-    'ST-CreationDateTime': { 
-        type: 'DateTime', 
-        length: '{27}', 
-        desc: 'ISO 8601 format with microseconds',
-        baseType: 'ISODateTime'
-    },
-    'ST-DeviceType': { 
-        type: 'CodeSet', 
-        codeSet: 'CS-DeviceType', 
-        length: '{3}' 
-    },
-    'ST-Identification': { 
-        type: 'TextString', 
-        length: '[8,16]', 
-        desc: 'Terminal/Register/Merchant ID',
-        baseType: 'TextString'
-    },
-    'ST-AuthenticationKey': { 
-        type: 'UUID', 
-        length: '{36}',
-        desc: 'Authentication key in UUID format',
-        baseType: 'UUID'
-    },
-    'ST-ShortName': { 
-        type: 'TextString', 
-        length: '[1,50]', 
-        desc: 'Device descriptive name',
-        baseType: 'TextString'
-    },
-    'ST-CashierIdentification': { 
-        type: 'TextString', 
-        length: '[0,20]',
-        desc: 'Cashier ID (optional)',
-        baseType: 'TextString'
-    },
-    'ST-InvoiceNumber': { 
-        type: 'TextString', 
-        length: '[0,30]',
-        desc: 'Invoice/Receipt number (optional)',
-        baseType: 'TextString'
-    },
-    'ST-IdentificationType': { 
-        type: 'TextString', 
-        length: '[0,20]',
-        desc: 'Type of identification (optional)',
-        baseType: 'TextString'
-    },
-    'ST-ServiceContent': { 
-        type: 'CodeSet', 
-        codeSet: 'CS-ServiceContent', 
-        length: '{4}' 
-    },
-    'ST-TransactionType': { 
-        type: 'CodeSet', 
-        codeSet: 'CS-TransactionType', 
-        length: '{4}' 
-    },
-    'ST-Amount': { 
-        type: 'Decimal', 
-        length: '[1,15]',
-        desc: 'Monetary amount (e.g., "1.00")',
-        baseType: 'Amount'
-    },
-    'ST-MOTOIndicator': { 
-        type: 'Boolean', 
-        length: '{5}',
-        desc: 'Mail Order/Telephone Order indicator',
-        baseType: 'Boolean'
-    },
-    'ST-Response': { 
-        type: 'CodeSet', 
-        codeSet: 'CS-Response', 
-        length: '{4}' 
-    },
-    'ST-ResponseReason': { 
-        type: 'CodeSet', 
-        codeSet: 'CS-ResponseReason', 
-        length: '{4}' 
-    }
+    'ST-SaleReconciliationIdentification': { type: 'TextString', length: '[1,8]', baseType: 'TextString' },
+    'ST-SerialNumber': { type: 'TextString', length: '[1,15]', baseType: 'TextString' },
+    'ST-AIDPriority': { type: 'TextString', length: '[5,7]', desc: 'Aid priority indicates the priority of selecting the aid (Application Identifier) in an EMV transaction', baseType: 'TextString' },
+    'ST-AuthenticationEntity': { type: 'CodeSet', codeSet: 'CS-AuthenticationEntity', length: '{4}', desc: 'This is the source of the authentication' },
+    'ST-AuthenticationKey': { type: 'UUID', length: '{35}', baseType: 'UUID' },
+    'ST-AuthenticationMethod': { type: 'CodeSet', length: '{4}', desc: 'Authentication Method' },
+    'ST-AuthorisationCode': { type: 'TextString', length: '[1,8]', baseType: 'TextString' },
+    'ST-CardBrand': { type: 'TextString', length: '[1,35]', desc: 'Brand name of the card', baseType: 'TextString' },
+    'ST-CashierIdentification': { type: 'TextString', length: '[1,8]', baseType: 'TextString' },
+    'ST-Currency': { type: 'TextString', length: '{3}', desc: 'Currency code according to ISO 4217 Alpha', baseType: 'TextString' },
+    'ST-CurrencyCodeA': { type: 'TextString', length: '{3}', desc: 'Currency code according to ISO 4217 Alpha', baseType: 'TextString' },
+    'ST-CurrencyCodeN': { type: 'DigitString', length: '{3}', desc: 'Currency code according to ISO 4217 Numeric', baseType: 'DigitString' },
+    'ST-CurrencyConversionId': { type: 'TextString', length: '[1,35]', desc: 'Identification of the currency conversion operation for the service provider', baseType: 'TextString' },
+    'ST-CurrencyConversionIndicator': { type: 'CodeSet', length: '{4}', desc: 'Indicator of a currency conversion' },
+    'ST-CurrencyName': { type: 'TextString', length: '[1,5]', desc: 'Currency Name', baseType: 'TextString' },
+    'ST-DCCCurrency': { type: 'TextString', baseType: 'TextString' },
+    'ST-DCCRate': { type: 'TextString', baseType: 'TextString' },
+    'ST-DeviceType': { type: 'CodeSet', codeSet: 'CS-DeviceType', length: '{3}', desc: 'Indicate which type of devices is' },
+    'ST-DocumentQualifier': { type: 'CodeSet', codeSet: 'CS-DocumentQualifier', length: '{4}', desc: 'Indicate which kind of receipt' },
+    'ST-ExchangeAction': { type: 'CodeSet', codeSet: 'CS-ExchangeAction', length: '{4}', desc: 'Exchange action type, for session management' },
+    'ST-ExchangeIdentification': { type: 'UUID', length: '{35}', desc: 'UUID format, unique for all transactions', baseType: 'UUID' },
+    'ST-ExchangeType': { type: 'CodeSet', codeSet: 'CS-ExchangeType', length: '{4}', desc: 'The status of transaction' },
+    'ST-EntryMode': { type: 'CodeSet', codeSet: 'CS-EntryMode', length: '{4}', desc: 'Entry Mode' },
+    'ST-Identification': { type: 'TextString', length: '[8,16]', desc: 'Terminal ID or Register Id', baseType: 'TextString' },
+    'ST-PaymentAccountReference': { type: 'TextString', length: '[1,70]', baseType: 'TextString' },
+    'ST-IdentificationType': { type: 'TextString', length: '[0,20]', desc: 'Verification type for prompting at the terminal. EG: "PASSPORT", "LICENSE"', baseType: 'TextString' },
+    'ST-InvoiceNumber': { type: 'TextString', length: '[1,35]', desc: 'Maximum 35 characters', baseType: 'TextString' },
+    'ST-MaskedCardNumber': { type: 'TextString', length: '[16,19]', desc: 'Only shows last 4 digits, other is masked by "*"', baseType: 'TextString' },
+    'ST-MessageFunction': { type: 'CodeSet', codeSet: 'CS-MessageFunction', length: '{4}', desc: 'Identifies the type of process related to the message' },
+    'ST-OutputContent': { type: 'TextString', length: '[1,*]', desc: 'Receipt data, line breaks represented by "\\r\\n" are replaced with vertical bars (|)', baseType: 'TextString' },
+    'ST-PaymentInstrumentType': { type: 'CodeSet', codeSet: 'CS-PaymentInstrumentType', length: '{4}', desc: 'Type of payment device used (CARD)' },
+    'ST-ProtocolVersion': { type: 'TextString', length: '[3,6]', desc: 'Version number of the protocol specification. Format MM.mm (Major MM, Minor mm). Example: "2.44"', baseType: 'TextString' },
+    'ST-ReportType': { type: 'CodeSet', codeSet: 'CS-ReportType', length: '{4}', desc: 'Batch report type' },
+    'ST-Response': { type: 'CodeSet', codeSet: 'CS-Response', length: '{4}', desc: 'Response Code' },
+    'ST-ResponseReason': { type: 'CodeSet', codeSet: 'CS-ResponseReason', length: '{4}', desc: 'Reason Code' },
+    'ST-SaleIdentification': { type: 'TextString', length: '[1,8]', baseType: 'TextString' },
+    'ST-SaleReferenceIdentification': { type: 'TextString', length: '[1,8]', baseType: 'TextString' },
+    'ST-SaleReferenceNumber': { type: 'TextString', length: '[1,8]', baseType: 'TextString' },
+    'ST-ServiceContent': { type: 'CodeSet', codeSet: 'CS-ServiceContent', length: '{4}', desc: 'Service content codes' },
+    'ST-ShortName': { type: 'TextString', length: '[1,45]', desc: 'Friendly Name of device', baseType: 'TextString' },
+    'ST-State': { type: 'CodeSet', codeSet: 'CS-State', length: '{4}', desc: 'Device status' },
+    'ST-TableNumber': { type: 'DigitString', length: '[1,5]', desc: 'Table Number', baseType: 'DigitString' },
+    'ST-TicketNumber': { type: 'DigitString', length: '[1,10]', desc: 'Ticket Number', baseType: 'DigitString' },
+    'ST-TransactionIdentification': { type: 'TextString', length: '[1,8]', baseType: 'TextString' },
+    'ST-TransactionReference': { type: 'TextString', length: '[1,15]', baseType: 'TextString' },
+    'ST-TransactionType': { type: 'CodeSet', codeSet: 'CS-TransactionType', length: '{4}', desc: 'Transaction type code' },
+    'ST-VerificationResult': { type: 'CodeSet', codeSet: 'CS-VerificationResult', length: '{4}', desc: 'Result of a verification' },
+    'ST-Signature': { type: 'TextString', length: '[1,*]', desc: 'Base64 encoded signature bitmap', baseType: 'TextString' },
+    'ST-PassengerName': { type: 'TextString', length: '[1,40]', desc: 'Passenger name', baseType: 'TextString' },
+    'ST-PhoneNumber': { type: 'TextString', length: '[1,20]', desc: 'Phone number', baseType: 'TextString' },
+    'ST-PropertyName': { type: 'TextString', length: '[1,50]', desc: 'Property / Hotel name', baseType: 'TextString' },
+    'ST-RenterName': { type: 'TextString', length: '[1,40]', desc: 'Name of person or company who rented the vehicle or booked the room', baseType: 'TextString' },
+    'ST-ShipName': { type: 'TextString', length: '[1,50]', desc: 'Ship name', baseType: 'TextString' },
+    'ST-TownName': { type: 'TextString', length: '[1,35]', desc: 'Name of a built-up area, with defined boundaries, and a local government', baseType: 'TextString' },
+    'ST-TravelAgencyName': { type: 'TextString', length: '[1,40]', desc: 'Travel agency name', baseType: 'TextString' },
+    'ST-TravelPackageIndicator': { type: 'CodeSet', codeSet: 'CS-TravelPackageIndicator', length: '{4}', desc: 'Travel package indicator' },
+    'ST-TravelTicketNumber': { type: 'TextString', length: '[1,35]', desc: 'Travel ticket number', baseType: 'TextString' },
+    'ST-UnitOfMeasure': { type: 'CodeSet', codeSet: 'CS-UnitOfMeasure', length: '{4}', desc: 'Unit of measure according to the T2A code set' },
+    'ST-VehicleLocationName': { type: 'TextString', length: '[1,40]', baseType: 'TextString' },
+    'ST-VehicleRentalAgreementNumber': { type: 'TextString', length: '[1,25]', desc: 'Vehicle rental Agreement Number', baseType: 'TextString' },
+    'ST-VehicleRentalCategoryCode': { type: 'CodeSet', codeSet: 'CS-VehicleRentalCategoryCode', length: '{4}', desc: 'Category code of the rented vehicle' },
+    'ST-VehicleRentalLocationIdentifier': { type: 'TextString', length: '[1,10]', desc: 'Rental/Return location identifier', baseType: 'TextString' },
+    'ST-VehicleRentalProgramCode': { type: 'TextString', length: '[1,2]', desc: 'Code used to identify characteristics of a vehicle rental program', baseType: 'TextString' },
+    'ST-BillingAdjustmentIndicator': { type: 'CodeSet', codeSet: 'CS-BillingAdjustmentIndicator', length: '{4}', desc: 'Indicator of adjustements done on/after customer departure' },
+    'ST-CountryCodeA2': { type: 'TextString', length: '{2}', desc: 'Country code according to ISO 3166-1 Alpha-2 code', baseType: 'TextString' },
+    'ST-CountrySubDivision': { type: 'TextString', length: '[1,3]', desc: 'Identifies a subdivision of a country (state, region, county). First-level: according to ISO 3166-2', baseType: 'TextString' },
+    'ST-FlightNumber': { type: 'TextString', length: '[1,4]', desc: 'Carrier assigned flight number', baseType: 'TextString' },
+    'ST-FireSafetyActIndicator': { type: 'CodeSet', codeSet: 'CS-FireSafetyActIndicator', length: '{4}', desc: 'Identifies that the facility complies with the Hotel and Motel Fire Safety Act of 1990 (PL101-391)' },
+    'ST-FolioNumber': { type: 'TextString', length: '[1,25]', desc: 'Lodging folio number. Mastercard, VISA: max 25 characters; Amex: max 12 characters', baseType: 'TextString' },
+    'ST-IATAAgencyNumber': { type: 'TextString', length: '{8}', desc: 'IATA agency number. Refer to the IATA Airline Coding Directory for valid codes', baseType: 'TextString' },
+    'ST-IATACarrierCode': { type: 'TextString', length: '{2}', desc: 'IATA carrier code. Refer to the IATA Airline Coding Directory for valid codes', baseType: 'TextString' },
+    'ST-IATALocationIdentifier': { type: 'TextString', length: '{3}', desc: 'IATA location identifier. Refer to the IATA Airline Coding Directory for valid codes', baseType: 'TextString' },
+    'ST-IATATravelClass': { type: 'TextString', length: '{1}', desc: 'IATA travel class. Code for fare class (A, B, C, etc.) within overall class of service', baseType: 'TextString' },
+    'ST-IndustryChargeType': { type: 'CodeSet', codeSet: 'CS-IndustryChargeType', length: '{4}', desc: 'Industry charge type' },
+    'ST-Amount': { type: 'Decimal', length: '[1,15]', desc: 'Monetary amount (e.g., "1.00")', baseType: 'Amount' },
+    'ST-MOTOIndicator': { type: 'Boolean', length: '{5}', desc: 'Mail Order/Telephone Order indicator', baseType: 'Boolean' },
+    'ST-PaymentTokenRequested': { type: 'TextString', length: '[1,10]', desc: 'Payment token requested indicator', baseType: 'TextString' },
+    'ST-PeriodUnit': { type: 'TextString', length: '[1,10]', desc: 'Period unit (daily, weekly, monthly)', baseType: 'TextString' }
 };
 
 // Code Sets Definitions
