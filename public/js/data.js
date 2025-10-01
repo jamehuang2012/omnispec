@@ -293,6 +293,15 @@ export const codeSets = {
         { code: 'TTCP', name: 'TransactionTemporaryCannotBeProcessed', desc: 'Transaction temporarily cannot be processed' },
         { code: 'TOER', name: 'TimeoutError', desc: 'Timeout error' },
         { code: 'UTVP', name: 'UnableToVerifyPIN', desc: 'Unable to verify PIN' }
+    ],
+    'CS-ReportType': [
+        { code: 'HSTS', name: 'HostTotalsSummary', desc: 'Host Totals Summary' },
+        { code: 'TMDR', name: 'TerminalDetailsReport', desc: 'Terminal Details Report' },
+        { code: 'TMSH', name: 'TerminalSalesByHour', desc: 'Terminal Sales By Hour' },
+        { code: 'TMTS', name: 'TerminalTotalsSummary', desc: 'Terminal Totals Summary' },
+        { code: 'TRRP', name: 'TransactionReceiptReprint', desc: 'Transaction receipt Reprint (Requires context)' },
+        { code: 'TMCD', name: 'TerminalConfigurationDetail', desc: 'Terminal Configuration Detail' },
+        { code: 'PARD', name: 'PreAuthDetailsReport', desc: 'PreAuth Details Report' }
     ]
 };
 
@@ -518,4 +527,3 @@ export const specStructure = {
         }
     }
 };
-  
