@@ -71,6 +71,16 @@
                     <label for="idType">ID Type:</label>
                     <input type="text" id="idType" placeholder="ID Type">
                 </div>
+                
+                <div class="control-group">
+                    <label for="industryData">Industry Data:</label>
+                    <select id="industryData">
+                        <option value="none">None</option>
+                        <option value="vehicle">Vehicle Rental</option>
+                        <option value="lodging">Lodging</option>
+                        <option value="travel">Travel & Cruise</option>
+                    </select>
+                </div>
             </div>
             <button onclick="generateJSON()">Generate JSON</button>
             <div id="validationStatus"></div>

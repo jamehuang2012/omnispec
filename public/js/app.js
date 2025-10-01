@@ -233,6 +233,122 @@ function renderBasicTypes() {
     });
 }
 
+// Helper function to generate sample values for different types
+function generateValueForType(type) {
+    const samples = {
+        'ST-RenterName': 'John Doe',
+        'ST-VehicleRentalAgreementNumber': 'RA' + Math.floor(Math.random() * 1000000),
+        'ST-VehicleLocationName': 'Downtown Rental Center',
+        'ST-TownName': 'Montreal',
+        'ST-CountrySubDivision': 'Quebec',
+        'ST-CountryCodeA2': 'CA',
+        'ST-VehicleRentalLocaltionIdentifier': 'LOC' + Math.floor(Math.random() * 1000),
+        'ST-FolioNumber': 'FN' + Math.floor(Math.random() * 100000),
+        'ST-PropertyName': 'Grand Hotel Downtown',
+        'ST-PhoneNumber': '+1-514-555-0100',
+        'ST-TravelTicketNumber': 'TKT' + Math.floor(Math.random() * 10000000),
+        'ST-IATACarrierCode': 'AC',
+        'ST-IATAAgencyNumber': '12345678',
+        'ST-TravelAgencyName': 'Travel Solutions Inc',
+        'ST-PassengerName': 'Jane Smith',
+        'ST-IATALocationIdentifier': ['YUL', 'YYZ', 'JFK', 'LAX'][Math.floor(Math.random() * 4)],
+        'ST-FlightNumber': 'AC' + Math.floor(100 + Math.random() * 900)
+    };
+    return samples[type] || 'N/A';
+}
+
+// Helper function to generate code set values
+function generateCodeSetValue(codeSet) {
+    const codeSets = {
+        'CS-VehicleRentalCategoryCode': ['ECAR', 'CCAR', 'ICAR', 'FCAR', 'SCAR'][Math.floor(Math.random() * 5)],
+        'CS-FireSafetyActIndicator': ['Y', 'N'][Math.floor(Math.random() * 2)],
+        'CS-TravelPackageIndicator': ['Y', 'N'][Math.floor(Math.random() * 2)]
+    };
+    return codeSets[codeSet] || 'N/A';
+}
+
+// Generate Vehicle Rental Data
+function generateVehicleRentalData() {
+    return {
+        RenterName: generateValueForType('ST-RenterName'),
+        RentalAgreementNumber: generateValueForType('ST-VehicleRentalAgreementNumber'),
+        RentalProgramCode: "CO",
+        VehicleCategoryCode: generateCodeSetValue('CS-VehicleRentalCategoryCode'),
+        RentalDuration: 3,
+        PeriodRentalRate: 89.99,
+        RatePeriodUnit: "Daily",
+        PickupDate: "2025-10-01",
+        PickupTime: "10:00:00",
+        PickupLocation: {
+            Name: generateValueForType('ST-VehicleLocationName'),
+            TownName: generateValueForType('ST-TownName'),
+            CountrySubDivision: generateValueForType('ST-CountrySubDivision'),
+            Country: generateValueForType('ST-CountryCodeA2')
+        },
+        ReturnDate: "2025-10-04",
+        ReturnTime: "10:00:00",
+        ReturnLocation: {
+            Identifier: generateValueForType('ST-VehicleRentalLocaltionIdentifier'),
+            Name: generateValueForType('ST-VehicleLocationName'),
+            TownName: generateValueForType('ST-TownName'),
+            CountrySubDivision: generateValueForType('ST-CountrySubDivision'),
+            LocationCountry: generateValueForType('ST-CountryCodeA2')
+        }
+    };
+}
+
+// Generate Lodging Data
+function generateLodgingData() {
+    return {
+        RenterName: generateValueForType('ST-RenterName'),
+        FolioNumber: generateValueForType('ST-FolioNumber'),
+        Property: {
+            Name: generateValueForType('ST-PropertyName'),
+            PhoneNumber: generateValueForType('ST-PhoneNumber'),
+            TownName: generateValueForType('ST-TownName'),
+            CountrySubDivision: generateValueForType('ST-CountrySubDivision'),
+            Country: generateValueForType('ST-CountryCodeA2')
+        },
+        FireSafetyActIndicator: generateCodeSetValue('CS-FireSafetyActIndicator'),
+        CheckInDate: "2025-10-01",
+        CheckOutDate: "2025-10-03",
+        Duration: 2,
+        NumberOfRooms: 1,
+        NumberOfGuests: 2,
+        RoomDetail: [{
+            DailyRate: 149.99,
+            Duration: 2,
+            TaxAmount: 18.75
+        }],
+        TotalTaxAmount: 37.50,
+        TotalRoomTaxAmount: 37.50
+    };
+}
+
+// Generate Travel Data
+function generateTravelData() {
+    return {
+        TicketNumber: generateValueForType('ST-TravelTicketNumber'),
+        IATACarrierCode: generateValueForType('ST-IATACarrierCode'),
+        TravelAgency: {
+            IATANumber: generateValueForType('ST-IATAAgencyNumber'),
+            Name: generateValueForType('ST-TravelAgencyName')
+        },
+        TravelPackageIndicator: generateCodeSetValue('CS-TravelPackageIndicator'),
+        PassengerName: generateValueForType('ST-PassengerName'),
+        TravelDate: "2025-10-15",
+        TripSegment: [{
+            DepartureDate: "2025-10-15",
+            DepartureTime: "08:30:00",
+            OriginCode: generateValueForType('ST-IATALocationIdentifier'),
+            DestinationCode: generateValueForType('ST-IATALocationIdentifier'),
+            FlightNumber: generateValueForType('ST-FlightNumber'),
+            IATACarrierCode: generateValueForType('ST-IATACarrierCode'),
+            TravelClass: "Y"
+        }]
+    };
+}
+
 // Generate JSON
 window.generateJSON = function() {
     const amount = parseFloat(document.getElementById('amount').value).toFixed(2);
@@ -241,6 +357,7 @@ window.generateJSON = function() {
     const clerkId = document.getElementById('clerkId').value || '';
     const invoiceNumber = document.getElementById('invoiceNumber').value || '';
     const idType = document.getElementById('idType').value || '';
+    const industryData = document.getElementById('industryData').value;
     
     // Generate UUID v4
     function generateUUID() {
@@ -347,6 +464,15 @@ window.generateJSON = function() {
             }
         }
     };
+    
+    // Add industry-specific data
+    if (industryData === 'vehicle') {
+        jsonData.OCserviceRequest.serviceRequest.paymentRequest.transactionDetails.VehicleRentalData = generateVehicleRentalData();
+    } else if (industryData === 'lodging') {
+        jsonData.OCserviceRequest.serviceRequest.paymentRequest.transactionDetails.LodgingData = generateLodgingData();
+    } else if (industryData === 'travel') {
+        jsonData.OCserviceRequest.serviceRequest.paymentRequest.transactionDetails.TravelData = generateTravelData();
+    }
     
     document.getElementById('jsonOutput').textContent = JSON.stringify(jsonData, null, 2);
     document.getElementById('validationStatus').innerHTML = 
