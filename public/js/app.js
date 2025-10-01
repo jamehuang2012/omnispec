@@ -236,7 +236,11 @@ function renderBasicTypes() {
 // Generate JSON
 window.generateJSON = function() {
     const amount = parseFloat(document.getElementById('amount').value).toFixed(2);
+    const tip = parseFloat(document.getElementById('tip').value).toFixed(2);
     const transactionType = document.getElementById('transactionType').value;
+    const clerkId = document.getElementById('clerkId').value || '';
+    const invoiceNumber = document.getElementById('invoiceNumber').value || '';
+    const idType = document.getElementById('idType').value || '';
     
     // Generate UUID v4
     function generateUUID() {
@@ -247,8 +251,32 @@ window.generateJSON = function() {
         });
     }
     
+    // Generate Local Reference ID (timestamp-based)
+    function generateLocalReferenceId() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+        const random = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
+        return `${year}${month}${day}${hours}${minutes}${seconds}${milliseconds}${random}`;
+    }
+    
+    // Auto-populate local reference ID if empty
+    let localReferenceId = document.getElementById('localReferenceId').value;
+    if (!localReferenceId) {
+        localReferenceId = generateLocalReferenceId();
+        document.getElementById('localReferenceId').value = localReferenceId;
+    }
+    
     // Get current ISO datetime
     const now = new Date().toISOString();
+    
+    // Calculate total amount (amount + tip)
+    const totalAmount = (parseFloat(amount) + parseFloat(tip)).toFixed(2);
     
     // Map transaction type to message function and transaction type code
     const transactionConfig = {
@@ -298,16 +326,18 @@ window.generateJSON = function() {
                 },
                 "context": {
                     "saleContext": {
-                        "cashierIdentification": "",
-                        "invoiceNumber": "",
-                        "identificationType": ""
+                        "cashierIdentification": clerkId,
+                        "invoiceNumber": invoiceNumber,
+                        "identificationType": idType,
+                        "localReferenceId": localReferenceId
                     }
                 },
                 "serviceContent": "FSPQ",
                 "paymentRequest": {
                     "transactionType": config.transactionType,
                     "transactionDetails": {
-                        "totalAmount": amount,
+                        "totalAmount": totalAmount,
+                        "tipAmount": tip,
                         "MOTOIndicator": false,
                         "detailedAmount": {
                             "amountGoodsAndServices": amount

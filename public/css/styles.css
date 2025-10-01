@@ -116,8 +116,15 @@ h1 {
     margin-bottom: 20px;
 }
 
-.control-group {
+.controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
     margin-bottom: 15px;
+}
+
+.control-group {
+    margin-bottom: 0;
 }
 
 label {
