@@ -298,7 +298,7 @@ export const codeSets = {
 
 // Message Specification Structure
 export const specStructure = {
-    MessageElement: {
+    OCserviceRequest: {
         header: {
             messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
             protocolVersion: { type: 'ST-ProtocolVersion', cardinality: '[1..1]' },
@@ -474,5 +474,48 @@ export const specStructure = {
                 }
             }
         }
+    },
+    OCreportRequest: {
+        header: {
+            messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
+            protocolVersion: { type: 'ST-ProtocolVersion', cardinality: '[1..1]' },
+            exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]' },
+            creationDateTime: { type: 'ISODateTime', cardinality: '[1..1]' },
+            initiatingParty: {
+                identification: { type: 'ST-Identification', cardinality: '[1..1]' },
+                type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' },
+                authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[1..1]' }
+            },
+            recipientParty: {
+                identification: { type: 'ST-Identification', cardinality: '[1..1]' },
+                type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' }
+            }
+        },
+        reportRequest: {
+            environment: {
+                merchant: { 
+                    identification: { type: 'ST-Identification', cardinality: '[1..1]' } 
+                },
+                POI: { 
+                    identification: { type: 'ST-Identification', cardinality: '[1..1]' } 
+                }
+            },
+            context: {
+                saleContext: {
+                    saleIdentification: { type: 'ST-SaleIdentification', cardinality: '[0..1]' },
+                    saleReferenceNumber: { type: 'ST-SaleReferenceNumber', cardinality: '[0..1]' },
+                    SaleReconciliationIdentification: { type: 'ST-SaleReconciliationIdentification', cardinality: '[0..1]' },
+                    cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
+                    invoiceNumber: { type: 'ST-InvoiceNumber', cardinality: '[0..1]' }
+                }
+            },
+            serviceContent: { type: 'ST-ServiceContent', cardinality: '[1..1]' },
+            reportTransactionRequest: {
+                reportType: { type: 'ST-ReportType', cardinality: '[1..1]' }
+            }
+        }
     }
 };
+  

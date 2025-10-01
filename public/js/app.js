@@ -123,6 +123,13 @@ function renderSpecTree() {
     const container = document.getElementById('specTree');
     container.innerHTML = '';
     
+    // Get current transaction type to determine which structure to show
+    const transactionTypeElement = document.getElementById('transactionType');
+    const transactionType = transactionTypeElement ? transactionTypeElement.value : 'Sale';
+    
+    // Determine which structure to display
+    const structureToShow = transactionType === 'Report' ? 'OCreportRequest' : 'OCserviceRequest';
+    
     function createNode(name, data, level = 0) {
         const div = document.createElement('div');
         div.className = 'tree-node';
@@ -166,9 +173,10 @@ function renderSpecTree() {
         }
     }
     
-    Object.keys(specStructure).forEach(key => {
-        createNode(key, specStructure[key]);
-    });
+    // Only render the selected structure
+    if (specStructure[structureToShow]) {
+        createNode(structureToShow, specStructure[structureToShow]);
+    }
 }
 
 // Render Data Types
@@ -253,6 +261,9 @@ window.handleTransactionTypeChange = function() {
     } else {
         reportTypeGroup.style.display = 'none';
     }
+    
+    // Re-render the spec tree to show the appropriate message structure
+    renderSpecTree();
 };
 
 // Helper function to generate sample values for different types
@@ -481,87 +492,133 @@ window.generateJSON = function() {
     // Determine root element name based on transaction type
     const rootElementName = transactionType === 'Report' ? 'OCreportRequest' : 'OCserviceRequest';
     
-    const jsonData = {
-        [rootElementName]: {
-            "header": {
-                "messageFunction": config.messageFunction,
-                "protocolVersion": "2.0",
-                "exchangeIdentification": generateUUID(),
-                "creationDateTime": now,
-                "initiatingParty": {
-                    "identification": "20000004",
-                    "type": "PID",
-                    "shortName": "Cash Register ID",
-                    "authenticationKey": generateUUID().toUpperCase()
-                },
-                "recipientParty": {
-                    "identification": "11000499",
-                    "type": "TID",
-                    "shortName": "Terminal  ID"
-                }
-            },
-            "serviceRequest": {
-                "environment": {
-                    "merchant": {
-                        "identification": "7800199838"
-                    },
-                    "POI": {
-                        "identification": "11000499"
-                    }
-                },
-                "context": {
-                    "saleContext": {
-                        "cashierIdentification": clerkId,
-                        "invoiceNumber": invoiceNumber,
-                        "identificationType": idType,
-                        "localReferenceId": localReferenceId
-                    }
-                },
-                "serviceContent": config.serviceContent,
-                "paymentRequest": {}
-            }
-        }
-    };
+    let jsonData;
     
-    // Add payment request details based on transaction type
-    if (config.transactionType) {
-        jsonData[rootElementName].serviceRequest.paymentRequest = {
-            "transactionType": config.transactionType,
-            "transactionDetails": {
-                "totalAmount": totalAmount,
-                "tipAmount": tip,
-                "MOTOIndicator": config.motoIndicator || false,
-                "detailedAmount": {
-                    "amountGoodsAndServices": amount
+    if (transactionType === 'Report') {
+        // Report request has different structure
+        jsonData = {
+            [rootElementName]: {
+                "header": {
+                    "messageFunction": config.messageFunction,
+                    "protocolVersion": "2.0",
+                    "exchangeIdentification": generateUUID(),
+                    "creationDateTime": now,
+                    "initiatingParty": {
+                        "identification": "20000004",
+                        "type": "PID",
+                        "shortName": "Cash Register ID",
+                        "authenticationKey": generateUUID().toUpperCase()
+                    },
+                    "recipientParty": {
+                        "identification": "11000499",
+                        "type": "TID",
+                        "shortName": "Terminal  ID"
+                    }
+                },
+                "reportRequest": {
+                    "environment": {
+                        "merchant": {
+                            "identification": "7800199838"
+                        },
+                        "POI": {
+                            "identification": "11000499"
+                        }
+                    },
+                    "context": {
+                        "saleContext": {
+                            "saleIdentification": "",
+                            "saleReferenceNumber": "",
+                            "SaleReconciliationIdentification": "",
+                            "cashierIdentification": clerkId,
+                            "invoiceNumber": invoiceNumber
+                        }
+                    },
+                    "serviceContent": config.serviceContent,
+                    "reportTransactionRequest": {
+                        "reportType": document.getElementById('reportType').value
+                    }
+                }
+            }
+        };
+    } else {
+        // Standard service request structure
+        jsonData = {
+            [rootElementName]: {
+                "header": {
+                    "messageFunction": config.messageFunction,
+                    "protocolVersion": "2.0",
+                    "exchangeIdentification": generateUUID(),
+                    "creationDateTime": now,
+                    "initiatingParty": {
+                        "identification": "20000004",
+                        "type": "PID",
+                        "shortName": "Cash Register ID",
+                        "authenticationKey": generateUUID().toUpperCase()
+                    },
+                    "recipientParty": {
+                        "identification": "11000499",
+                        "type": "TID",
+                        "shortName": "Terminal  ID"
+                    }
+                },
+                "serviceRequest": {
+                    "environment": {
+                        "merchant": {
+                            "identification": "7800199838"
+                        },
+                        "POI": {
+                            "identification": "11000499"
+                        }
+                    },
+                    "context": {
+                        "saleContext": {
+                            "cashierIdentification": clerkId,
+                            "invoiceNumber": invoiceNumber,
+                            "identificationType": idType,
+                            "localReferenceId": localReferenceId
+                        }
+                    },
+                    "serviceContent": config.serviceContent,
+                    "paymentRequest": {}
                 }
             }
         };
         
-        // Add service attribute if present (for incremental auth)
-        if (config.serviceAttribute) {
-            jsonData[rootElementName].serviceRequest.paymentRequest.serviceAttribute = config.serviceAttribute;
+        // Add payment request details based on transaction type
+        if (config.transactionType) {
+            jsonData[rootElementName].serviceRequest.paymentRequest = {
+                "transactionType": config.transactionType,
+                "transactionDetails": {
+                    "totalAmount": totalAmount,
+                    "tipAmount": tip,
+                    "MOTOIndicator": config.motoIndicator || false,
+                    "detailedAmount": {
+                        "amountGoodsAndServices": amount
+                    }
+                }
+            };
+            
+            // Add service attribute if present (for incremental auth)
+            if (config.serviceAttribute) {
+                jsonData[rootElementName].serviceRequest.paymentRequest.serviceAttribute = config.serviceAttribute;
+            }
+        } else if (transactionType === 'Settle') {
+            // Batch settlement doesn't need payment details
+            jsonData[rootElementName].serviceRequest.reconciliation = {
+                "reconciliationType": "Batch",
+                "POIReconciliationID": generateUUID().substring(0, 10)
+            };
         }
-    } else if (transactionType === 'Settle') {
-        // Batch settlement doesn't need payment details
-        jsonData[rootElementName].serviceRequest.reconciliation = {
-            "reconciliationType": "Batch",
-            "POIReconciliationID": generateUUID().substring(0, 10)
-        };
-    } else if (transactionType === 'Report') {
-        // Report request structure
-        jsonData[rootElementName].serviceRequest.reportRequest = {
-            "reportType": document.getElementById('reportType').value
-        };
-    }
-    
-    // Add industry-specific data only for payment transactions
-    if (config.transactionType && industryData !== 'none') {
-        if (industryData === 'vehicle') {
-            jsonData[rootElementName].serviceRequest.paymentRequest.transactionDetails.VehicleRentalData = generateVehicleRentalData();
-        } else if (industryData === 'lodging') {
-            jsonData[rootElementName].serviceRequest.paymentRequest.transactionDetails.LodgingData = generateLodgingData();
-        } else if (industryData === 'travel') {
-            jsonData[rootElementName].serviceRequest.paymentRequest.transactionDetails.TravelData = generateTravelData();
+        
+        // Add industry-specific data only for payment transactions
+        if (config.transactionType && industryData !== 'none') {
+            if (industryData === 'vehicle') {
+                jsonData[rootElementName].serviceRequest.paymentRequest.transactionDetails.VehicleRentalData = generateVehicleRentalData();
+            } else if (industryData === 'lodging') {
+                jsonData[rootElementName].serviceRequest.paymentRequest.transactionDetails.LodgingData = generateLodgingData();
+            } else if (industryData === 'travel') {
+                jsonData[rootElementName].serviceRequest.paymentRequest.transactionDetails.TravelData = generateTravelData();
+            }
         }
     }
     
