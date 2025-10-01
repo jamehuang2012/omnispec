@@ -478,8 +478,11 @@ window.generateJSON = function() {
     
     const config = transactionConfig[transactionType] || transactionConfig['Sale'];
     
+    // Determine root element name based on transaction type
+    const rootElementName = transactionType === 'Report' ? 'OCreportRequest' : 'OCserviceRequest';
+    
     const jsonData = {
-        "OCserviceRequest": {
+        [rootElementName]: {
             "header": {
                 "messageFunction": config.messageFunction,
                 "protocolVersion": "2.0",
@@ -522,7 +525,7 @@ window.generateJSON = function() {
     
     // Add payment request details based on transaction type
     if (config.transactionType) {
-        jsonData.OCserviceRequest.serviceRequest.paymentRequest = {
+        jsonData[rootElementName].serviceRequest.paymentRequest = {
             "transactionType": config.transactionType,
             "transactionDetails": {
                 "totalAmount": totalAmount,
@@ -536,17 +539,17 @@ window.generateJSON = function() {
         
         // Add service attribute if present (for incremental auth)
         if (config.serviceAttribute) {
-            jsonData.OCserviceRequest.serviceRequest.paymentRequest.serviceAttribute = config.serviceAttribute;
+            jsonData[rootElementName].serviceRequest.paymentRequest.serviceAttribute = config.serviceAttribute;
         }
     } else if (transactionType === 'Settle') {
         // Batch settlement doesn't need payment details
-        jsonData.OCserviceRequest.serviceRequest.reconciliation = {
+        jsonData[rootElementName].serviceRequest.reconciliation = {
             "reconciliationType": "Batch",
             "POIReconciliationID": generateUUID().substring(0, 10)
         };
     } else if (transactionType === 'Report') {
         // Report request structure
-        jsonData.OCserviceRequest.serviceRequest.reportRequest = {
+        jsonData[rootElementName].serviceRequest.reportRequest = {
             "reportType": document.getElementById('reportType').value
         };
     }
@@ -554,11 +557,11 @@ window.generateJSON = function() {
     // Add industry-specific data only for payment transactions
     if (config.transactionType && industryData !== 'none') {
         if (industryData === 'vehicle') {
-            jsonData.OCserviceRequest.serviceRequest.paymentRequest.transactionDetails.VehicleRentalData = generateVehicleRentalData();
+            jsonData[rootElementName].serviceRequest.paymentRequest.transactionDetails.VehicleRentalData = generateVehicleRentalData();
         } else if (industryData === 'lodging') {
-            jsonData.OCserviceRequest.serviceRequest.paymentRequest.transactionDetails.LodgingData = generateLodgingData();
+            jsonData[rootElementName].serviceRequest.paymentRequest.transactionDetails.LodgingData = generateLodgingData();
         } else if (industryData === 'travel') {
-            jsonData.OCserviceRequest.serviceRequest.paymentRequest.transactionDetails.TravelData = generateTravelData();
+            jsonData[rootElementName].serviceRequest.paymentRequest.transactionDetails.TravelData = generateTravelData();
         }
     }
     
