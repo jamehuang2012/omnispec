@@ -317,48 +317,178 @@ export const codeSets = {
 
 // Message Specification Structure
 export const specStructure = {
-    OCserviceRequest: {
+    MessageElement: {
         header: {
             messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
             protocolVersion: { type: 'ST-ProtocolVersion', cardinality: '[1..1]' },
             exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]' },
-            creationDateTime: { type: 'ST-CreationDateTime', cardinality: '[1..1]' },
+            creationDateTime: { type: 'ISODateTime', cardinality: '[1..1]' },
             initiatingParty: {
                 identification: { type: 'ST-Identification', cardinality: '[1..1]' },
                 type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
-                shortName: { type: 'ST-ShortName', cardinality: '[1..1]' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' },
                 authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[1..1]' }
             },
             recipientParty: {
                 identification: { type: 'ST-Identification', cardinality: '[1..1]' },
                 type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
-                shortName: { type: 'ST-ShortName', cardinality: '[1..1]' }
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' }
             }
         },
         serviceRequest: {
             environment: {
                 merchant: { 
-                    identification: { type: 'ST-Identification', cardinality: '[1..1]' } 
+                    identification: { type: 'ST-Identification', cardinality: '[1..1]', desc: 'Merchant ID' } 
                 },
                 POI: { 
-                    identification: { type: 'ST-Identification', cardinality: '[1..1]' } 
+                    identification: { type: 'ST-Identification', cardinality: '[1..1]', desc: 'Terminal ID' } 
                 }
             },
             context: {
                 saleContext: {
+                    saleIdentification: { type: 'ST-SaleIdentification', cardinality: '[0..1]' },
+                    saleReferenceNumber: { type: 'ST-SaleReferenceNumber', cardinality: '[0..1]' },
+                    SaleReconciliationIdentification: { type: 'ST-SaleReconciliationIdentification', cardinality: '[0..1]' },
                     cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
                     invoiceNumber: { type: 'ST-InvoiceNumber', cardinality: '[0..1]' },
-                    identificationType: { type: 'ST-IdentificationType', cardinality: '[0..1]' }
+                    tokenRequested: { type: 'ST-PaymentTokenRequested', cardinality: '[0..1]' },
+                    identificationType: { type: 'ST-IdentificationType', cardinality: '[0..1]' },
+                    purchaseOrderNumber: { type: 'TextString', cardinality: '[0..1]' }
                 }
             },
             serviceContent: { type: 'ST-ServiceContent', cardinality: '[1..1]' },
             paymentRequest: {
-                transactionType: { type: 'ST-TransactionType', cardinality: '[1..1]' },
-                transactionDetails: {
-                    totalAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
-                    MOTOIndicator: { type: 'ST-MOTOIndicator', cardinality: '[1..1]' },
-                    detailedAmount: {
-                        amountGoodsAndServices: { type: 'ST-Amount', cardinality: '[1..1]' }
+                paymentTransaction: {
+                    transactionType: { type: 'ST-TransactionType', cardinality: '[1..1]' },
+                    serviceAttribute: { type: 'CS-ServiceAttribute', cardinality: '[0..1]' },
+                    transactionIdentification: { type: 'TextString', cardinality: '[1..1]' },
+                    transactionDetails: {
+                        totalAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
+                        amountQualifier: { type: 'CS-AmountQualifier', cardinality: '[0..1]' },
+                        cumulativeAmount: { type: 'ST-Amount', cardinality: '[0..1]' },
+                        validityDuration: { type: 'TextString', cardinality: '[0..1]' },
+                        detailedAmount: {
+                            amountGoodsAndServices: { type: 'ST-Amount', cardinality: '[1..1]' },
+                            cashBack: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            gratuity: { type: 'ST-Amount', cardinality: '[0..1]' }
+                        },
+                        MOTOIndicator: { type: 'ST-MOTOIndicator', cardinality: '[0..1]' },
+                        DCCRefund: {
+                            DCCRate: { type: 'ST-DCCRate', cardinality: '[1..1]' },
+                            DCCCurrency: { type: 'ST-DCCCurrency', cardinality: '[1..1]' }
+                        },
+                        AIDPriority: { type: 'ST-AIDPriority', cardinality: '[0..*]' },
+                        VehicleRentalData: {
+                            RenterName: { type: 'ST-RenterName', cardinality: '[0..1]' },
+                            RentalAgreementNumber: { type: 'ST-VehicleRentalAgreementNumber', cardinality: '[0..1]' },
+                            RentalProgramCode: { type: 'ST-VehicleRentalProgramCode', cardinality: '[0..1]' },
+                            VehicleCategoryCode: { type: 'ST-VehicleRentalCategoryCode', cardinality: '[0..1]' },
+                            RentalDuration: { type: 'Number', cardinality: '[0..1]' },
+                            PeriodRentalRate: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            RatePeriodUnit: { type: 'ST-PeriodUnit', cardinality: '[0..1]' },
+                            DistanceRentalRate: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            RateDistanceUnit: { type: 'ST-UnitOfMeasure', cardinality: '[0..1]' },
+                            RentalDistance: { type: 'Number', cardinality: '[0..1]' },
+                            RentalDistanceUnit: { type: 'ST-UnitOfMeasure', cardinality: '[0..1]' },
+                            PickupDate: { type: 'ISODate', cardinality: '[0..1]' },
+                            PickupTime: { type: 'ISOTime', cardinality: '[0..1]' },
+                            PickupLocation: {
+                                Name: { type: 'ST-VehicleLocationName', cardinality: '[0..1]' },
+                                TownName: { type: 'ST-TownName', cardinality: '[0..1]' },
+                                CountrySubDivision: { type: 'ST-CountrySubDivision', cardinality: '[0..1]' },
+                                Country: { type: 'ST-CountryCodeA2', cardinality: '[0..1]' }
+                            },
+                            ReturnDate: { type: 'ISODate', cardinality: '[0..1]' },
+                            ReturnTime: { type: 'ISOTime', cardinality: '[0..1]' },
+                            ReturnLocation: {
+                                Identifier: { type: 'ST-VehicleRentalLocationIdentifier', cardinality: '[0..1]' },
+                                Name: { type: 'ST-VehicleLocationName', cardinality: '[0..1]' },
+                                TownName: { type: 'ST-TownName', cardinality: '[0..1]' },
+                                CountrySubDivision: { type: 'ST-CountrySubDivision', cardinality: '[0..1]' },
+                                LocationCountry: { type: 'ST-CountryCodeA2', cardinality: '[0..1]' }
+                            },
+                            AdjustmentIndicator: { type: 'ST-BillingAdjustmentIndicator', cardinality: '[0..1]' },
+                            AdjustmentAmount: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            DetailedCharge: {
+                                Type: { type: 'ST-IndustryChargeType', cardinality: '[1..1]' },
+                                Amount: { type: 'ST-Amount', cardinality: '[1..1]' }
+                            }
+                        },
+                        LodgingData: {
+                            RenterName: { type: 'ST-RenterName', cardinality: '[0..1]' },
+                            FolioNumber: { type: 'ST-FolioNumber', cardinality: '[0..1]' },
+                            Property: {
+                                Name: { type: 'ST-PropertyName', cardinality: '[0..1]' },
+                                PhoneNumber: { type: 'ST-PhoneNumber', cardinality: '[0..1]' },
+                                TownName: { type: 'ST-TownName', cardinality: '[0..1]' },
+                                CountrySubDivision: { type: 'ST-CountrySubDivision', cardinality: '[0..2]' },
+                                Country: { type: 'ST-CountryCodeA2', cardinality: '[1..1]' }
+                            },
+                            FireSafetyActIndicator: { type: 'ST-FireSafetyActIndicator', cardinality: '[0..1]' },
+                            CheckInDate: { type: 'ISODate', cardinality: '[0..1]' },
+                            CheckOutDate: { type: 'ISODate', cardinality: '[0..1]' },
+                            Duration: { type: 'Number', cardinality: '[0..1]' },
+                            NumberOfRooms: { type: 'Number', cardinality: '[0..1]' },
+                            NumberOfGuests: { type: 'Number', cardinality: '[0..1]' },
+                            RoomDetail: {
+                                DailyRate: { type: 'ST-Amount', cardinality: '[1..1]' },
+                                Duration: { type: 'Number', cardinality: '[1..1]' },
+                                TaxAmount: { type: 'ST-Amount', cardinality: '[0..1]' }
+                            },
+                            TotalTaxAmount: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            TotalRoomTaxAmount: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            PrepaidAmount: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            CashAdvanceAmount: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            AdjustmentIndicator: { type: 'ST-BillingAdjustmentIndicator', cardinality: '[0..1]' },
+                            AdjustmentAmount: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            DetailedCharge: {
+                                Type: { type: 'ST-IndustryChargeType', cardinality: '[1..1]' },
+                                Amount: { type: 'ST-Amount', cardinality: '[1..1]' }
+                            }
+                        },
+                        TravelData: {
+                            TicketNumber: { type: 'ST-TravelTicketNumber', cardinality: '[0..1]' },
+                            IATACarrierCode: { type: 'ST-IATACarrierCode', cardinality: '[0..1]' },
+                            TravelAgency: {
+                                IATANumber: { type: 'ST-IATAAgencyNumber', cardinality: '[0..1]' },
+                                Name: { type: 'ST-TravelAgencyName', cardinality: '[0..1]' }
+                            },
+                            TravelPackageIndicator: { type: 'ST-TravelPackageIndicator', cardinality: '[0..1]' },
+                            PassengerName: { type: 'ST-PassengerName', cardinality: '[0..1]' },
+                            TravelDate: { type: 'ISODate', cardinality: '[0..1]' },
+                            TripSegment: {
+                                DepartureDate: { type: 'ISODate', cardinality: '[0..1]' },
+                                DepartureTime: { type: 'ISOTime', cardinality: '[0..1]' },
+                                OriginCode: { type: 'ST-IATALocationIdentifier', cardinality: '[0..1]' },
+                                DestinationCode: { type: 'ST-IATALocationIdentifier', cardinality: '[0..1]' },
+                                FlightNumber: { type: 'ST-FlightNumber', cardinality: '[0..1]' },
+                                IATACarrierCode: { type: 'ST-IATACarrierCode', cardinality: '[0..1]' },
+                                TravelClass: { type: 'ST-IATATravelClass', cardinality: '[0..1]' },
+                                LodgingData: {
+                                    CheckInDate: { type: 'ISODate', cardinality: '[0..1]' },
+                                    CheckOutDate: { type: 'ISODate', cardinality: '[0..1]' },
+                                    Duration: { type: 'Number', cardinality: '[0..1]' },
+                                    Property: {
+                                        Name: { type: 'ST-PropertyName', cardinality: '[0..1]' },
+                                        PhoneNumber: { type: 'ST-PhoneNumber', cardinality: '[0..1]' },
+                                        TownName: { type: 'ST-TownName', cardinality: '[0..1]' },
+                                        CountrySubDivision: { type: 'ST-CountrySubDivision', cardinality: '[0..2]' },
+                                        Country: { type: 'ST-CountryCodeA2', cardinality: '[1..1]' }
+                                    },
+                                    RoomDetail: {
+                                        DailyRate: { type: 'ST-Amount', cardinality: '[1..1]' },
+                                        Duration: { type: 'Number', cardinality: '[1..1]' }
+                                    }
+                                }
+                            },
+                            CruiseData: {
+                                DepartureDate: { type: 'ISODate', cardinality: '[0..1]' },
+                                ReturnDate: { type: 'ISODate', cardinality: '[0..1]' },
+                                Duration: { type: 'Number', cardinality: '[0..1]' },
+                                ShipName: { type: 'ST-ShipName', cardinality: '[0..1]' },
+                                TotalAmount: { type: 'ST-Amount', cardinality: '[0..1]' }
+                            }
+                        }
                     }
                 }
             }
