@@ -399,15 +399,58 @@ window.generateJSON = function() {
     const transactionConfig = {
         'Sale': {
             messageFunction: 'AUTQ',  // SaleRequest
-            transactionType: 'CRDP'   // CardPayment
+            transactionType: 'CRDP',  // CardPayment
+            serviceContent: 'FSPQ'
+        },
+        'MOTO': {
+            messageFunction: 'AUTQ',  // SaleRequest
+            transactionType: 'CRDP',  // CardPayment
+            serviceContent: 'FSPQ',
+            motoIndicator: true
+        },
+        'Crypto': {
+            messageFunction: 'CRPQ',  // RequestCryptoToPOI
+            transactionType: 'CRDP',  // CardPayment
+            serviceContent: 'FSPQ'
         },
         'Refund': {
             messageFunction: 'RNFQ',  // RefundRequest
-            transactionType: 'RFND'   // Refund
+            transactionType: 'RFND',  // Refund
+            serviceContent: 'FSPQ'
+        },
+        'Void': {
+            messageFunction: 'FMPV',  // reversalRequest
+            transactionType: 'CRDP',  // CardPayment
+            serviceContent: 'FSRQ'    // FinancialreversalRequest
+        },
+        'TipAdjustment': {
+            messageFunction: 'TADV',  // TipAdjustmentRequest
+            transactionType: 'CRDP',  // CardPayment
+            serviceContent: 'FSPQ'
         },
         'PreAuth': {
             messageFunction: 'FAUQ',  // PreauthRequest
-            transactionType: 'RESV'   // Reservation
+            transactionType: 'RESV',  // Reservation
+            serviceContent: 'FSPQ'
+        },
+        'IncrementalAuth': {
+            messageFunction: 'FAUQ',  // PreauthRequest
+            transactionType: 'RESV',  // Reservation
+            serviceContent: 'FSPQ',
+            serviceAttribute: 'INCR'  // Incremental
+        },
+        'PreAuthCompletion': {
+            messageFunction: 'CMPV',  // CompletionRequest
+            transactionType: 'RESV',  // Reservation
+            serviceContent: 'FSPQ'
+        },
+        'Settle': {
+            messageFunction: 'RCLQ',  // BatchSettlementRequest
+            serviceContent: 'FSCQ'    // FinancialReconciliationRequest
+        },
+        'Report': {
+            messageFunction: 'RPTQ',  // reportRequest
+            serviceContent: 'FSPQ'
         }
     };
     
@@ -449,29 +492,52 @@ window.generateJSON = function() {
                         "localReferenceId": localReferenceId
                     }
                 },
-                "serviceContent": "FSPQ",
-                "paymentRequest": {
-                    "transactionType": config.transactionType,
-                    "transactionDetails": {
-                        "totalAmount": totalAmount,
-                        "tipAmount": tip,
-                        "MOTOIndicator": false,
-                        "detailedAmount": {
-                            "amountGoodsAndServices": amount
-                        }
-                    }
-                }
+                "serviceContent": config.serviceContent,
+                "paymentRequest": {}
             }
         }
     };
     
-    // Add industry-specific data
-    if (industryData === 'vehicle') {
-        jsonData.OCserviceRequest.serviceRequest.paymentRequest.transactionDetails.VehicleRentalData = generateVehicleRentalData();
-    } else if (industryData === 'lodging') {
-        jsonData.OCserviceRequest.serviceRequest.paymentRequest.transactionDetails.LodgingData = generateLodgingData();
-    } else if (industryData === 'travel') {
-        jsonData.OCserviceRequest.serviceRequest.paymentRequest.transactionDetails.TravelData = generateTravelData();
+    // Add payment request details based on transaction type
+    if (config.transactionType) {
+        jsonData.OCserviceRequest.serviceRequest.paymentRequest = {
+            "transactionType": config.transactionType,
+            "transactionDetails": {
+                "totalAmount": totalAmount,
+                "tipAmount": tip,
+                "MOTOIndicator": config.motoIndicator || false,
+                "detailedAmount": {
+                    "amountGoodsAndServices": amount
+                }
+            }
+        };
+        
+        // Add service attribute if present (for incremental auth)
+        if (config.serviceAttribute) {
+            jsonData.OCserviceRequest.serviceRequest.paymentRequest.serviceAttribute = config.serviceAttribute;
+        }
+    } else if (transactionType === 'Settle') {
+        // Batch settlement doesn't need payment details
+        jsonData.OCserviceRequest.serviceRequest.reconciliation = {
+            "reconciliationType": "Batch",
+            "POIReconciliationID": generateUUID().substring(0, 10)
+        };
+    } else if (transactionType === 'Report') {
+        // Report request structure
+        jsonData.OCserviceRequest.serviceRequest.reportRequest = {
+            "reportType": document.getElementById('reportType').value
+        };
+    }
+    
+    // Add industry-specific data only for payment transactions
+    if (config.transactionType && industryData !== 'none') {
+        if (industryData === 'vehicle') {
+            jsonData.OCserviceRequest.serviceRequest.paymentRequest.transactionDetails.VehicleRentalData = generateVehicleRentalData();
+        } else if (industryData === 'lodging') {
+            jsonData.OCserviceRequest.serviceRequest.paymentRequest.transactionDetails.LodgingData = generateLodgingData();
+        } else if (industryData === 'travel') {
+            jsonData.OCserviceRequest.serviceRequest.paymentRequest.transactionDetails.TravelData = generateTravelData();
+        }
     }
     
     document.getElementById('jsonOutput').textContent = JSON.stringify(jsonData, null, 2);
