@@ -1,3 +1,59 @@
+// Basic Data Types Definitions
+export const basicDataTypes = {
+    'Amount': {
+        definition: 'Number of monetary units specified in a currency where the unit of currency is implied by the context and compliant with ISO 4217. The decimal separator is a dot.',
+        format: 'Decimal number',
+        example: '100.00, 1.50, 0.99'
+    },
+    'Boolean': {
+        definition: 'A data element which could take the value of "true" or "false".',
+        format: 'true | false',
+        example: 'true, false'
+    },
+    'CodeSet': {
+        definition: 'A set of alternative values where each discrete value has a specific meaning. These values (or meanings) are identified by a label, and the list of possible values defines the type. For instance the data element PeriodUnit, which identifies the period between consecutive payments, has the basic type Enumeration. The set of alternative values defining the data type is: "Day", "Month" and "Year". So PeriodUnit data element might take one of these three values.',
+        format: 'Predefined set of codes',
+        example: 'AUTQ, CRDP, FSPQ'
+    },
+    'DigitString': {
+        definition: 'A sequence of decimal digit characters (value \'0\' through \'9\'). The digit sequence might have any length, including zero characters.',
+        format: '[0-9]*',
+        example: '123456, 0, 999'
+    },
+    'Indicator': {
+        definition: 'A data element which could take the value of "1" or "0". 1 indicates true, 0 indicates false.',
+        format: '0 | 1',
+        example: '1 (true), 0 (false)'
+    },
+    'ISODate': {
+        definition: 'A particular point in the progression of time in a calendar year expressed in the YYYY-MM-DD format.',
+        format: 'YYYY-MM-DD',
+        example: '2025-10-01, 2024-12-31'
+    },
+    'ISODateTime': {
+        definition: 'A particular point in the progression of time defined by a mandatory date and a mandatory time component, expressed in either UTC time format (YYYY-MM-DDThh:mm:ss.sssZ), local time with UTC offset format (YYYY-MM-DDThh:mm:ss.sss+/-hh:mm), or local time format (YYYY-MM-DDThh:mm:ss.sss). These representations are defined in "XML Schema Part 2: Datatypes Second Edition - W3C Recommendation 28 October 2004" which is aligned with ISO 8601.',
+        format: 'YYYY-MM-DDThh:mm:ss.sssZ',
+        example: '2025-10-01T15:30:45.123Z',
+        notes: 'Beginning/end of calendar day: 00:00:00 = beginning, 24:00:00 = end. Decimal fractions of seconds may be included. Involved parties shall agree on maximum number of digits allowed.'
+    },
+    'PercentageRate': {
+        definition: 'Rate expressed as a percentage, that is, in hundredths, for example, 0.7 is 7/10 of a percent, and 7.0 is 7%.',
+        format: 'totalDigits: 11, fractionDigits: 10, baseValue: 100.0',
+        example: '0.7 (0.7%), 7.0 (7%), 12.5 (12.5%)'
+    },
+    'TextString': {
+        definition: 'A sequence of printable characters (Unicode). The character sequence might have any length, including zero characters.',
+        format: 'Unicode string',
+        example: 'Hello World, Terminal ID, 商品名'
+    },
+    'UUID': {
+        definition: 'A Universally Unique IDentifier (UUID) is a 128-bit label used for information in computer systems.',
+        format: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+        example: '550e8400-e29b-41d4-a716-446655440000',
+        reference: 'https://en.wikipedia.org/wiki/Universally_unique_identifier'
+    }
+};
+
 // Data Types Definitions
 export const dataTypes = {
     'ST-MessageFunction': { 
@@ -9,17 +65,20 @@ export const dataTypes = {
     'ST-ProtocolVersion': { 
         type: 'TextString', 
         length: '[3,6]', 
-        desc: 'Version MM.mm' 
+        desc: 'Version MM.mm',
+        baseType: 'TextString'
     },
     'ST-ExchangeIdentification': { 
         type: 'UUID', 
         length: '{36}', 
-        desc: 'Unique transaction UUID' 
+        desc: 'Unique transaction UUID',
+        baseType: 'UUID'
     },
     'ST-CreationDateTime': { 
         type: 'DateTime', 
         length: '{27}', 
-        desc: 'ISO 8601 format with microseconds' 
+        desc: 'ISO 8601 format with microseconds',
+        baseType: 'ISODateTime'
     },
     'ST-DeviceType': { 
         type: 'CodeSet', 
@@ -29,32 +88,38 @@ export const dataTypes = {
     'ST-Identification': { 
         type: 'TextString', 
         length: '[8,16]', 
-        desc: 'Terminal/Register/Merchant ID' 
+        desc: 'Terminal/Register/Merchant ID',
+        baseType: 'TextString'
     },
     'ST-AuthenticationKey': { 
         type: 'UUID', 
         length: '{36}',
-        desc: 'Authentication key in UUID format' 
+        desc: 'Authentication key in UUID format',
+        baseType: 'UUID'
     },
     'ST-ShortName': { 
         type: 'TextString', 
         length: '[1,50]', 
-        desc: 'Device descriptive name' 
+        desc: 'Device descriptive name',
+        baseType: 'TextString'
     },
     'ST-CashierIdentification': { 
         type: 'TextString', 
         length: '[0,20]',
-        desc: 'Cashier ID (optional)' 
+        desc: 'Cashier ID (optional)',
+        baseType: 'TextString'
     },
     'ST-InvoiceNumber': { 
         type: 'TextString', 
         length: '[0,30]',
-        desc: 'Invoice/Receipt number (optional)' 
+        desc: 'Invoice/Receipt number (optional)',
+        baseType: 'TextString'
     },
     'ST-IdentificationType': { 
         type: 'TextString', 
         length: '[0,20]',
-        desc: 'Type of identification (optional)' 
+        desc: 'Type of identification (optional)',
+        baseType: 'TextString'
     },
     'ST-ServiceContent': { 
         type: 'CodeSet', 
@@ -69,12 +134,14 @@ export const dataTypes = {
     'ST-Amount': { 
         type: 'Decimal', 
         length: '[1,15]',
-        desc: 'Monetary amount (e.g., "1.00")' 
+        desc: 'Monetary amount (e.g., "1.00")',
+        baseType: 'Amount'
     },
     'ST-MOTOIndicator': { 
         type: 'Boolean', 
         length: '{5}',
-        desc: 'Mail Order/Telephone Order indicator' 
+        desc: 'Mail Order/Telephone Order indicator',
+        baseType: 'Boolean'
     },
     'ST-Response': { 
         type: 'CodeSet', 

@@ -1,4 +1,4 @@
-import { dataTypes, codeSets, specStructure } from './data.js';
+import { dataTypes, codeSets, specStructure, basicDataTypes } from './data.js';
 
 // Modal Functions
 window.closeModal = function() {
@@ -29,6 +29,20 @@ window.showDataTypeModal = function(typeName) {
         content += `<div class="modal-info-row"><div class="modal-info-label">Description:</div><div class="modal-info-value">${dataType.desc}</div></div>`;
     }
     
+    // Show base type information if available
+    if (dataType.baseType && basicDataTypes[dataType.baseType]) {
+        const baseType = basicDataTypes[dataType.baseType];
+        content += `<div class="modal-info-row"><div class="modal-info-label">Base Type:</div><div class="modal-info-value">
+            <span class="base-type-link" onclick="showBasicTypeModal('${dataType.baseType}')">${dataType.baseType}</span>
+        </div></div>`;
+        content += `</div><div class="modal-section"><div class="modal-section-title">Base Type: ${dataType.baseType}</div>`;
+        content += `<div class="modal-info-row"><div class="modal-info-label">Definition:</div><div class="modal-info-value">${baseType.definition}</div></div>`;
+        content += `<div class="modal-info-row"><div class="modal-info-label">Format:</div><div class="modal-info-value"><code>${baseType.format}</code></div></div>`;
+        if (baseType.example) {
+            content += `<div class="modal-info-row"><div class="modal-info-label">Example:</div><div class="modal-info-value"><code>${baseType.example}</code></div></div>`;
+        }
+    }
+    
     if (dataType.codeSet && codeSets[dataType.codeSet]) {
         content += `</div><div class="modal-section"><div class="modal-section-title">Valid Codes (${dataType.codeSet})</div>`;
         content += '<table class="code-set-table"><thead><tr><th>Code</th><th>Name</th><th>Definition</th></tr></thead><tbody>';
@@ -42,6 +56,47 @@ window.showDataTypeModal = function(typeName) {
         });
         
         content += '</tbody></table>';
+    }
+    
+    content += '</div>';
+    modalTitle.textContent = typeName;
+    modalBody.innerHTML = content;
+    modal.classList.add('show');
+};
+
+window.showBasicTypeModal = function(typeName) {
+    const modal = document.getElementById('dataTypeModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const basicType = basicDataTypes[typeName];
+    
+    if (!basicType) {
+        modalBody.innerHTML = `<p style="padding:20px;">Not found: <strong>${typeName}</strong></p>`;
+        modalTitle.textContent = typeName;
+        modal.classList.add('show');
+        return;
+    }
+    
+    let content = `<div class="modal-section"><div class="modal-section-title">${typeName}</div>`;
+    
+    if (basicType.definition) {
+        content += `<div class="modal-info-row"><div class="modal-info-label">Definition:</div><div class="modal-info-value">${basicType.definition}</div></div>`;
+    }
+    
+    if (basicType.format) {
+        content += `<div class="modal-info-row"><div class="modal-info-label">Format:</div><div class="modal-info-value"><code>${basicType.format}</code></div></div>`;
+    }
+    
+    if (basicType.example) {
+        content += `<div class="modal-info-row"><div class="modal-info-label">Example:</div><div class="modal-info-value"><code>${basicType.example}</code></div></div>`;
+    }
+    
+    if (basicType.notes) {
+        content += `<div class="modal-info-row"><div class="modal-info-label">Notes:</div><div class="modal-info-value">${basicType.notes}</div></div>`;
+    }
+    
+    if (basicType.reference) {
+        content += `<div class="modal-info-row"><div class="modal-info-label">Reference:</div><div class="modal-info-value"><a href="${basicType.reference}" target="_blank" rel="noopener noreferrer">${basicType.reference}</a></div></div>`;
     }
     
     content += '</div>';
@@ -147,6 +202,37 @@ function renderDataTypes() {
     });
 }
 
+// Render Basic Data Types
+function renderBasicTypes() {
+    const container = document.getElementById('basicTypes');
+    
+    let html = '<div style="padding:10px;background:#e8f5e9;border-radius:6px;margin-bottom:15px;">';
+    html += '<strong>Click any basic type</strong> to view its complete definition and format specifications.</div>';
+    
+    html += '<div class="basic-types-grid">';
+    
+    Object.keys(basicDataTypes).forEach(name => {
+        const bt = basicDataTypes[name];
+        html += `<div class="basic-type-card" data-basic-type="${name}">
+            <div class="basic-type-name">${name}</div>
+            <div class="basic-type-format">${bt.format}</div>
+            <div class="basic-type-preview">${bt.definition.substring(0, 80)}...</div>
+        </div>`;
+    });
+    
+    html += '</div>';
+    
+    container.innerHTML = html;
+    
+    // Add click handlers to basic type cards
+    container.querySelectorAll('.basic-type-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const typeName = this.getAttribute('data-basic-type');
+            showBasicTypeModal(typeName);
+        });
+    });
+}
+
 // Generate JSON
 window.generateJSON = function() {
     const amount = parseFloat(document.getElementById('amount').value).toFixed(2);
@@ -164,17 +250,28 @@ window.generateJSON = function() {
     // Get current ISO datetime
     const now = new Date().toISOString();
     
-    // Map transaction type to code
-    const transactionTypeMap = {
-        'Sale': 'CRDP',
-        'Refund': 'RFND',
-        'PreAuth': 'RESV'
+    // Map transaction type to message function and transaction type code
+    const transactionConfig = {
+        'Sale': {
+            messageFunction: 'AUTQ',  // SaleRequest
+            transactionType: 'CRDP'   // CardPayment
+        },
+        'Refund': {
+            messageFunction: 'RNFQ',  // RefundRequest
+            transactionType: 'RFND'   // Refund
+        },
+        'PreAuth': {
+            messageFunction: 'FAUQ',  // PreauthRequest
+            transactionType: 'RESV'   // Reservation
+        }
     };
+    
+    const config = transactionConfig[transactionType] || transactionConfig['Sale'];
     
     const jsonData = {
         "OCserviceRequest": {
             "header": {
-                "messageFunction": "AUTQ",
+                "messageFunction": config.messageFunction,
                 "protocolVersion": "2.0",
                 "exchangeIdentification": generateUUID(),
                 "creationDateTime": now,
@@ -208,7 +305,7 @@ window.generateJSON = function() {
                 },
                 "serviceContent": "FSPQ",
                 "paymentRequest": {
-                    "transactionType": transactionTypeMap[transactionType] || "CRDP",
+                    "transactionType": config.transactionType,
                     "transactionDetails": {
                         "totalAmount": amount,
                         "MOTOIndicator": false,
@@ -288,5 +385,6 @@ function fallbackCopy(text, button, originalText) {
 document.addEventListener('DOMContentLoaded', () => {
     renderSpecTree();
     renderDataTypes();
+    renderBasicTypes();
     generateJSON();
 });
