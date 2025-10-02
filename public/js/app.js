@@ -2,25 +2,21 @@ import { dataTypes, codeSets, specStructure, basicDataTypes } from './data.js';
 
 // Tab Switching Function
 window.switchTab = function(tabName) {
-    // Hide all tab contents
     const tabContents = document.querySelectorAll('.tab-content');
     tabContents.forEach(tab => {
         tab.classList.remove('active');
     });
     
-    // Remove active class from all tab buttons
     const tabButtons = document.querySelectorAll('.tab-btn');
     tabButtons.forEach(btn => {
         btn.classList.remove('active');
     });
     
-    // Show selected tab content
     const selectedTab = document.getElementById(tabName + 'Tab');
     if (selectedTab) {
         selectedTab.classList.add('active');
     }
     
-    // Add active class to clicked button
     event.target.classList.add('active');
 };
 
@@ -53,7 +49,6 @@ window.showDataTypeModal = function(typeName) {
         content += `<div class="modal-info-row"><div class="modal-info-label">Description:</div><div class="modal-info-value">${dataType.desc}</div></div>`;
     }
     
-    // Show base type information if available
     if (dataType.baseType && basicDataTypes[dataType.baseType]) {
         const baseType = basicDataTypes[dataType.baseType];
         content += `<div class="modal-info-row"><div class="modal-info-label">Base Type:</div><div class="modal-info-value">
@@ -129,7 +124,6 @@ window.showBasicTypeModal = function(typeName) {
     modal.classList.add('show');
 };
 
-// Event Listeners for Modal
 window.addEventListener('click', (e) => {
     if (e.target.id === 'dataTypeModal') {
         closeModal();
@@ -142,16 +136,13 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// Render Specification Tree
 function renderSpecTree() {
     const container = document.getElementById('specTree');
     container.innerHTML = '';
     
-    // Get current transaction type to determine which structure to show
     const transactionTypeElement = document.getElementById('transactionType');
     const transactionType = transactionTypeElement ? transactionTypeElement.value : 'Sale';
     
-    // Determine which structure to display
     let structureToShow;
     if (transactionType === 'Report') {
         structureToShow = 'OCreportRequest';
@@ -161,7 +152,6 @@ function renderSpecTree() {
         structureToShow = 'OCserviceRequestReversal';
     } else if (transactionType === 'Settle') {
         structureToShow = 'OCserviceRequestBatch';
-    
     } else {
         structureToShow = 'OCserviceRequest';
     }
@@ -194,7 +184,6 @@ function renderSpecTree() {
             div.classList.add('clickable');
             div.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Check if it's a basic type first
                 if (basicDataTypes[data.type]) {
                     showBasicTypeModal(data.type);
                 } else {
@@ -214,17 +203,14 @@ function renderSpecTree() {
         }
     }
     
-    // Only render the selected structure
-  if (specStructure[structureToShow]) {
-    // For reversal and batch, display as OCserviceRequest in the tree but use their specific structures
-    const displayName = (structureToShow === 'OCserviceRequestReversal' || structureToShow === 'OCserviceRequestBatch') 
-        ? 'OCserviceRequest' 
-        : structureToShow;
-    createNode(displayName, specStructure[structureToShow]);
-}
+    if (specStructure[structureToShow]) {
+        const displayName = (structureToShow === 'OCserviceRequestReversal' || structureToShow === 'OCserviceRequestBatch') 
+            ? 'OCserviceRequest' 
+            : structureToShow;
+        createNode(displayName, specStructure[structureToShow]);
+    }
 }
 
-// Render Data Types
 function renderDataTypes() {
     const container = document.getElementById('dataTypes');
     
@@ -246,7 +232,6 @@ function renderDataTypes() {
     
     container.innerHTML = html;
     
-    // Add click handlers to data type items
     container.querySelectorAll('.data-type-clickable').forEach(item => {
         item.addEventListener('click', function() {
             const typeName = this.getAttribute('data-type');
@@ -255,7 +240,6 @@ function renderDataTypes() {
     });
 }
 
-// Render Basic Data Types
 function renderBasicTypes() {
     const container = document.getElementById('basicTypes');
     
@@ -277,7 +261,6 @@ function renderBasicTypes() {
     
     container.innerHTML = html;
     
-    // Add click handlers to basic type cards
     container.querySelectorAll('.basic-type-card').forEach(card => {
         card.addEventListener('click', function() {
             const typeName = this.getAttribute('data-basic-type');
@@ -286,7 +269,6 @@ function renderBasicTypes() {
     });
 }
 
-// Handle transaction type changes to show/hide conditional fields
 window.handleTransactionTypeChange = function() {
     const transactionType = document.getElementById('transactionType').value;
     const tipGroup = document.querySelector('[data-field="tip"]');
@@ -298,7 +280,6 @@ window.handleTransactionTypeChange = function() {
     const exchangeIdentificationGroup = document.querySelector('[data-field="exchangeIdentification"]');
     const originalTransactionIdGroup = document.querySelector('[data-field="originalTransactionId"]');
     
-    // Hide all conditional fields first
     tipGroup.style.display = 'none';
     reportTypeGroup.style.display = 'none';
     sessionTypeGroup.style.display = 'none';
@@ -308,7 +289,6 @@ window.handleTransactionTypeChange = function() {
     exchangeIdentificationGroup.style.display = 'none';
     originalTransactionIdGroup.style.display = 'none';
     
-    // Show TIP only for SALE transactions
     if (transactionType === 'Sale') {
         tipGroup.style.display = 'block';
         document.getElementById('tip').value = '0.00';
@@ -316,37 +296,30 @@ window.handleTransactionTypeChange = function() {
         document.getElementById('tip').value = '0.00';
     }
     
-    // Show Report Type only for REPORT transactions
     if (transactionType === 'Report') {
         reportTypeGroup.style.display = 'block';
     }
     
-    // Show Session Management fields for SESSION-MANAGEMENT
     if (transactionType === 'SessionManagement') {
         sessionTypeGroup.style.display = 'block';
         exchangeActionGroup.style.display = 'block';
         exchangeTypeGroup.style.display = 'block';
         deviceStateGroup.style.display = 'block';
-        // Check if exchange action requires identification
         handleExchangeActionChange();
     }
     
-    // Show Original Transaction ID for VOID
     if (transactionType === 'Void') {
         originalTransactionIdGroup.style.display = 'block';
     }
     
-    // Re-render the spec tree to show the appropriate message structure
     renderSpecTree();
 };
 
-// Handle exchange action changes to show/hide exchange identification
 window.handleExchangeActionChange = function() {
     const exchangeAction = document.getElementById('exchangeAction').value;
     const exchangeIdentificationGroup = document.querySelector('[data-field="exchangeIdentification"]');
     const deviceStateSelect = document.getElementById('deviceState');
     
-    // Show Exchange Identification field for RETR, RECV, or CANC
     if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
         exchangeIdentificationGroup.style.display = 'block';
     } else {
@@ -354,16 +327,13 @@ window.handleExchangeActionChange = function() {
         document.getElementById('exchangeIdentification').value = '';
     }
     
-    // Update Device State options based on Exchange Action
     if (exchangeAction === 'NOTI') {
-        // For NOTI, only show BUSY and IDLE
         deviceStateSelect.innerHTML = `
             <option value="">Select State (Required for NOTI)</option>
             <option value="BUSY">Busy</option>
             <option value="IDLE">Idle</option>
         `;
     } else {
-        // For other actions, show all states
         deviceStateSelect.innerHTML = `
             <option value="">None</option>
             <option value="BUSY">Busy</option>
@@ -374,7 +344,6 @@ window.handleExchangeActionChange = function() {
     }
 };
 
-// Helper function to generate sample values for different types
 function generateValueForType(type) {
     const samples = {
         'ST-RenterName': 'John Doe',
@@ -398,7 +367,6 @@ function generateValueForType(type) {
     return samples[type] || 'N/A';
 }
 
-// Helper function to generate code set values
 function generateCodeSetValue(codeSet) {
     const codeSets = {
         'CS-VehicleRentalCategoryCode': ['ECAR', 'CCAR', 'ICAR', 'FCAR', 'SCAR'][Math.floor(Math.random() * 5)],
@@ -408,7 +376,6 @@ function generateCodeSetValue(codeSet) {
     return codeSets[codeSet] || 'N/A';
 }
 
-// Generate Vehicle Rental Data
 function generateVehicleRentalData() {
     return {
         RenterName: generateValueForType('ST-RenterName'),
@@ -438,7 +405,6 @@ function generateVehicleRentalData() {
     };
 }
 
-// Generate Lodging Data
 function generateLodgingData() {
     return {
         RenterName: generateValueForType('ST-RenterName'),
@@ -466,7 +432,6 @@ function generateLodgingData() {
     };
 }
 
-// Generate Travel Data
 function generateTravelData() {
     return {
         TicketNumber: generateValueForType('ST-TravelTicketNumber'),
@@ -490,7 +455,6 @@ function generateTravelData() {
     };
 }
 
-// Validation Functions
 function validateJSON(jsonData, rootElementName) {
     const validationResults = {
         errors: [],
@@ -507,31 +471,24 @@ function validateJSON(jsonData, rootElementName) {
         return;
     }
     
-    // Validate recursively
     validateNode(data, structure, rootElementName, validationResults);
-    
-    // Display results
     displayValidationResults(validationResults);
 }
 
 function validateNode(data, spec, path, results) {
     if (!spec || typeof spec !== 'object') return;
     
-    // Check each field in the spec
     Object.keys(spec).forEach(key => {
         const fieldSpec = spec[key];
         const fieldPath = `${path}.${key}`;
         const fieldValue = data[key];
         
-        // Check if field has a type (leaf node)
         if (fieldSpec.type) {
             validateField(fieldValue, fieldSpec, fieldPath, results);
         } else {
-            // It's a nested object
             if (fieldValue !== undefined && fieldValue !== null) {
                 validateNode(fieldValue, fieldSpec, fieldPath, results);
             } else {
-                // Check cardinality for nested objects
                 if (fieldSpec.cardinality && isRequired(fieldSpec.cardinality)) {
                     results.errors.push(`Missing required field: ${fieldPath}`);
                 }
@@ -544,7 +501,6 @@ function validateField(value, spec, path, results) {
     const cardinality = spec.cardinality;
     const typeName = spec.type;
     
-    // Check required fields
     if (isRequired(cardinality)) {
         if (value === undefined || value === null || value === '') {
             results.errors.push(`Missing required field: ${path} (${cardinality})`);
@@ -552,49 +508,37 @@ function validateField(value, spec, path, results) {
         }
     }
     
-    // If field is optional and empty, skip further validation
     if (value === undefined || value === null || value === '') {
         return;
     }
     
-    // Get type definition
     const typeDefinition = dataTypes[typeName];
     
     if (typeDefinition) {
-        // Validate length
         if (typeDefinition.length) {
             validateLength(value, typeDefinition.length, path, results);
         }
         
-        // Validate code set
         if (typeDefinition.codeSet && codeSets[typeDefinition.codeSet]) {
             validateCodeSet(value, typeDefinition.codeSet, path, results);
         }
         
-        // Validate base type format
         if (typeDefinition.baseType) {
             validateBaseType(value, typeDefinition.baseType, path, results);
         }
     } else {
-        // Direct basic type validation
         validateBaseType(value, typeName, path, results);
     }
 }
 
 function isRequired(cardinality) {
     if (!cardinality) return false;
-    // [1..1] or [1..n] means required
     return cardinality.startsWith('[1');
 }
 
 function validateLength(value, lengthSpec, path, results) {
     const strValue = String(value);
     const len = strValue.length;
-    
-    // Parse length specification
-    // {n} = exact length n
-    // [n,m] = between n and m
-    // [n,*] = at least n
     
     if (lengthSpec.startsWith('{') && lengthSpec.endsWith('}')) {
         const exactLength = parseInt(lengthSpec.slice(1, -1));
@@ -696,7 +640,6 @@ function displayValidationResults(results) {
     
     let html = '<div style="padding: 20px;">';
     
-    // Summary
     const totalIssues = results.errors.length + results.warnings.length;
     if (totalIssues === 0) {
         html += `<div class="validation-status validation-success" style="margin-bottom: 20px;">
@@ -710,7 +653,6 @@ function displayValidationResults(results) {
         </div>`;
     }
     
-    // Errors
     if (results.errors.length > 0) {
         html += '<div class="validation-section"><h3 style="color: #dc3545; margin-bottom: 10px;">❌ Errors</h3>';
         html += '<ul style="list-style: none; padding: 0;">';
@@ -720,7 +662,6 @@ function displayValidationResults(results) {
         html += '</ul></div>';
     }
     
-    // Warnings
     if (results.warnings.length > 0) {
         html += '<div class="validation-section" style="margin-top: 20px;"><h3 style="color: #ffc107; margin-bottom: 10px;">⚠️ Warnings</h3>';
         html += '<ul style="list-style: none; padding: 0;">';
@@ -730,7 +671,6 @@ function displayValidationResults(results) {
         html += '</ul></div>';
     }
     
-    // Info (Valid codes, etc.)
     if (results.info.length > 0 && results.errors.length === 0) {
         html += '<div class="validation-section" style="margin-top: 20px;"><h3 style="color: #28a745; margin-bottom: 10px;">ℹ️ Validation Details</h3>';
         html += '<ul style="list-style: none; padding: 0;">';
@@ -747,7 +687,6 @@ function displayValidationResults(results) {
     container.innerHTML = html;
 }
 
-// Generate JSON
 window.generateJSON = function() {
     const amount = parseFloat(document.getElementById('amount').value).toFixed(2);
     const tip = parseFloat(document.getElementById('tip').value).toFixed(2);
@@ -757,7 +696,6 @@ window.generateJSON = function() {
     const idType = document.getElementById('idType').value || '';
     const industryData = document.getElementById('industryData').value;
     
-    // Generate UUID v4
     function generateUUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             const r = Math.random() * 16 | 0;
@@ -766,7 +704,6 @@ window.generateJSON = function() {
         });
     }
     
-    // Generate Local Reference ID (timestamp-based)
     function generateLocalReferenceId() {
         const now = new Date();
         const year = now.getFullYear();
@@ -780,84 +717,78 @@ window.generateJSON = function() {
         return `${year}${month}${day}${hours}${minutes}${seconds}${milliseconds}${random}`;
     }
     
-    // Auto-populate local reference ID if empty
     let localReferenceId = document.getElementById('localReferenceId').value;
     if (!localReferenceId) {
         localReferenceId = generateLocalReferenceId();
         document.getElementById('localReferenceId').value = localReferenceId;
     }
     
-    // Get current ISO datetime
     const now = new Date().toISOString();
-    
-    // Calculate total amount (amount + tip)
     const totalAmount = (parseFloat(amount) + parseFloat(tip)).toFixed(2);
     
-    // Map transaction type to message function and transaction type code
     const transactionConfig = {
         'Sale': {
-            messageFunction: 'AUTQ',  // SaleRequest
-            transactionType: 'CRDP',  // CardPayment
+            messageFunction: 'AUTQ',
+            transactionType: 'CRDP',
             serviceContent: 'FSPQ'
         },
         'MOTO': {
-            messageFunction: 'AUTQ',  // SaleRequest
-            transactionType: 'CRDP',  // CardPayment
+            messageFunction: 'AUTQ',
+            transactionType: 'CRDP',
             serviceContent: 'FSPQ',
             motoIndicator: true
         },
         'Crypto': {
-            messageFunction: 'CRPQ',  // RequestCryptoToPOI
-            transactionType: 'CRDP',  // CardPayment
+            messageFunction: 'CRPQ',
+            transactionType: 'CRDP',
             serviceContent: 'FSPQ'
         },
         'Refund': {
-            messageFunction: 'RNFQ',  // RefundRequest
-            transactionType: 'RFND',  // Refund
+            messageFunction: 'RNFQ',
+            transactionType: 'RFND',
             serviceContent: 'FSPQ'
         },
         'Void': {
-            messageFunction: 'FMPV',  // reversalRequest
-            transactionType: 'CRDP',  // CardPayment
-            serviceContent: 'FSRQ'    // FinancialreversalRequest
+            messageFunction: 'FMPV',
+            transactionType: 'CRDP',
+            serviceContent: 'FSRQ'
         },
         'TipAdjustment': {
-            messageFunction: 'TADV',  // TipAdjustmentRequest
-            transactionType: 'CRDP',  // CardPayment
+            messageFunction: 'TADV',
+            transactionType: 'CRDP',
             serviceContent: 'FSPQ'
         },
         'PreAuth': {
-            messageFunction: 'FAUQ',  // PreauthRequest
-            transactionType: 'RESV',  // Reservation
+            messageFunction: 'FAUQ',
+            transactionType: 'RESV',
             serviceContent: 'FSPQ'
         },
         'IncrementalAuth': {
-            messageFunction: 'FAUQ',  // PreauthRequest
-            transactionType: 'RESV',  // Reservation
+            messageFunction: 'FAUQ',
+            transactionType: 'RESV',
             serviceContent: 'FSPQ',
-            serviceAttribute: 'INCR'  // Incremental
+            serviceAttribute: 'INCR'
         },
         'PreAuthCompletion': {
-            messageFunction: 'CMPV',  // CompletionRequest
-            transactionType: 'RESV',  // Reservation
+            messageFunction: 'CMPV',
+            transactionType: 'RESV',
             serviceContent: 'FSPQ'
         },
         'Settle': {
-            messageFunction: 'RCLQ',  // BatchSettlementRequest
-            serviceContent: 'FSCQ'    // FinancialReconciliationRequest
+            messageFunction: 'RCLQ',
+            serviceContent: 'FSCQ'
         },
         'Report': {
-            messageFunction: 'RPTQ',  // reportRequest
+            messageFunction: 'RPTQ',
             serviceContent: 'FSPQ'
         },
         'SessionManagement': {
-            messageFunction: 'SASQ',  // sessionManagementRequest
+            messageFunction: 'SASQ',
         }
     };
     
     const config = transactionConfig[transactionType] || transactionConfig['Sale'];
     
-    // Determine root element name based on transaction type
     let rootElementName;
     if (transactionType === 'Report') {
         rootElementName = 'OCreportRequest';
@@ -870,7 +801,6 @@ window.generateJSON = function() {
     let jsonData;
     
     if (transactionType === 'Report') {
-        // Report request has different structure
         jsonData = {
             [rootElementName]: {
                 "header": {
@@ -916,7 +846,6 @@ window.generateJSON = function() {
             }
         };
     } else if (transactionType === 'SessionManagement') {
-        // Session Management request structure
         const sessionType = document.getElementById('sessionType').value;
         const exchangeAction = document.getElementById('exchangeAction').value;
         const exchangeType = document.getElementById('exchangeType').value;
@@ -941,7 +870,6 @@ window.generateJSON = function() {
             }
         };
         
-        // Add appropriate component based on session type
         if (sessionType === 'POI') {
             jsonData[rootElementName].sessionManagementRequest.POIComponent = {
                 "POIIdentification": {
@@ -953,24 +881,19 @@ window.generateJSON = function() {
                 }
             };
             
-            // Add exchangeType only if not NORM (default)
             if (exchangeType && exchangeType !== 'NORM') {
                 jsonData[rootElementName].sessionManagementRequest.POIComponent.POIGroupIdentification.exchangeType = exchangeType;
             }
             
-            // Add exchangeIdentification for RETR/RECV/CANC
             if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
-                // Use user-provided value or generate UUID
                 const exchangeId = exchangeIdentificationInput || generateUUID();
                 jsonData[rootElementName].sessionManagementRequest.POIComponent.POIGroupIdentification.exchangeIdentification = exchangeId;
             }
             
-            // Add state if provided
             if (deviceState) {
                 jsonData[rootElementName].sessionManagementRequest.POIComponent.state = deviceState;
             }
         } else {
-            // POS Component
             jsonData[rootElementName].sessionManagementRequest.POSComponent = {
                 "cashierIdentification": clerkId || "CLERK001",
                 "POSGroupIdentification": {
@@ -978,24 +901,19 @@ window.generateJSON = function() {
                 }
             };
             
-            // Add exchangeType only if not NORM (default)
             if (exchangeType && exchangeType !== 'NORM') {
                 jsonData[rootElementName].sessionManagementRequest.POSComponent.POSGroupIdentification.exchangeType = exchangeType;
             }
             
-            // Add exchangeIdentification for RETR/RECV/CANC
             if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
-                // Use user-provided value or generate UUID
                 const exchangeId = exchangeIdentificationInput || generateUUID();
                 jsonData[rootElementName].sessionManagementRequest.POSComponent.POSGroupIdentification.exchangeIdentification = exchangeId;
             } else if (exchangeAction !== 'INIT' && exchangeAction !== 'NOTI') {
-                // For other actions, optionally add exchangeIdentification if provided
                 if (exchangeIdentificationInput) {
                     jsonData[rootElementName].sessionManagementRequest.POSComponent.POSGroupIdentification.exchangeIdentification = exchangeIdentificationInput;
                 }
             }
             
-            // Add state - required as BUSY/IDLE for NOTI action
             if (exchangeAction === 'NOTI') {
                 jsonData[rootElementName].sessionManagementRequest.POSComponent.state = deviceState || "IDLE";
             } else if (deviceState) {
@@ -1003,7 +921,6 @@ window.generateJSON = function() {
             }
         }
     } else {
-        // Standard service request structure
         jsonData = {
             [rootElementName]: {
                 "header": {
@@ -1046,7 +963,6 @@ window.generateJSON = function() {
             }
         };
         
-        // Add payment request details based on transaction type
         if (config.transactionType) {
             jsonData[rootElementName].serviceRequest.paymentRequest = {
                 "transactionType": config.transactionType,
@@ -1060,19 +976,16 @@ window.generateJSON = function() {
                 }
             };
             
-            // Add service attribute if present (for incremental auth)
             if (config.serviceAttribute) {
                 jsonData[rootElementName].serviceRequest.paymentRequest.serviceAttribute = config.serviceAttribute;
             }
         } else if (transactionType === 'Settle') {
-            // Batch settlement doesn't need payment details
             jsonData[rootElementName].serviceRequest.reconciliation = {
                 "reconciliationType": "Batch",
                 "POIReconciliationID": generateUUID().substring(0, 10)
             };
         }
         
-        // Add industry-specific data only for payment transactions
         if (config.transactionType && industryData !== 'none') {
             if (industryData === 'vehicle') {
                 jsonData[rootElementName].serviceRequest.paymentRequest.transactionDetails.VehicleRentalData = generateVehicleRentalData();
@@ -1088,11 +1001,9 @@ window.generateJSON = function() {
     document.getElementById('validationStatus').innerHTML = 
         '<div class="validation-status validation-success">✓ JSON generated successfully</div>';
     
-    // Also populate validation tab input
     document.getElementById('validationInput').value = JSON.stringify(jsonData, null, 2);
 };
 
-// Validate Payload from Validation Tab
 window.validatePayload = function() {
     const input = document.getElementById('validationInput').value.trim();
     
@@ -1111,10 +1022,8 @@ window.validatePayload = function() {
     try {
         jsonData = JSON.parse(input);
         
-        // Determine root element
         if (jsonData.OCserviceRequest) {
             rootElementName = 'OCserviceRequest';
-            // Check if it's a reversal request (Void)
             if (jsonData.OCserviceRequest.serviceRequest && jsonData.OCserviceRequest.serviceRequest.reversalRequest) {
                 rootElementName = 'OCserviceRequestReversal';
             }
@@ -1131,7 +1040,6 @@ window.validatePayload = function() {
             return;
         }
         
-        // Run validation
         validateJSON(jsonData, rootElementName);
         
     } catch (e) {
@@ -1143,13 +1051,11 @@ window.validatePayload = function() {
     }
 };
 
-// Copy JSON to Clipboard
 window.copyJSON = function() {
     const text = document.getElementById('jsonOutput').textContent;
     const button = event.target;
     const originalText = button.textContent;
     
-    // Try modern Clipboard API first
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text)
             .then(() => {
@@ -1163,12 +1069,10 @@ window.copyJSON = function() {
                 fallbackCopy(text, button, originalText);
             });
     } else {
-        // Fallback for older browsers
         fallbackCopy(text, button, originalText);
     }
 };
 
-// Copy Response Function
 window.copyResponse = function() {
     const text = document.getElementById('responseOutput').textContent;
     const button = event.target;
@@ -1191,7 +1095,6 @@ window.copyResponse = function() {
     }
 };
 
-// Fallback copy method using textarea
 function fallbackCopy(text, button, originalText) {
     const textarea = document.createElement('textarea');
     textarea.value = text;
@@ -1224,20 +1127,17 @@ function fallbackCopy(text, button, originalText) {
     }
 }
 
-// Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
     renderSpecTree();
     renderDataTypes();
     renderBasicTypes();
     generateJSON();
-    handleTransactionTypeChange(); // Set initial field visibility
+    handleTransactionTypeChange();
     
-    // Initialize response tab
     renderResponseDataTypes();
     renderResponseSpecTree();
 });
 
-// Render Response Data Types
 function renderResponseDataTypes() {
     const container = document.getElementById('responseDataTypes');
     
@@ -1259,7 +1159,6 @@ function renderResponseDataTypes() {
     
     container.innerHTML = html;
     
-    // Add click handlers to data type items
     container.querySelectorAll('.data-type-clickable').forEach(item => {
         item.addEventListener('click', function() {
             const typeName = this.getAttribute('data-type');
@@ -1268,7 +1167,6 @@ function renderResponseDataTypes() {
     });
 }
 
-// Render Response Specification Tree
 function renderResponseSpecTree() {
     const container = document.getElementById('responseSpecTree');
     container.innerHTML = '';
@@ -1303,7 +1201,6 @@ function renderResponseSpecTree() {
             div.classList.add('clickable');
             div.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Check if it's a basic type first
                 if (basicDataTypes[data.type]) {
                     showBasicTypeModal(data.type);
                 } else {
@@ -1323,21 +1220,19 @@ function renderResponseSpecTree() {
         }
     }
     
-    // Render the response structure
     if (specStructure[structureToShow]) {
         createNode(structureToShow, specStructure[structureToShow]);
     }
 }
 
-// Generate Response JSON
 window.generateResponseJSON = function() {
+    const responseTransactionType = document.getElementById('responseTransactionType').value;
     const amount = parseFloat(document.getElementById('responseAmount').value).toFixed(2);
     const tip = parseFloat(document.getElementById('responseTip').value).toFixed(2);
     const reportType = document.getElementById('responseReportType').value;
     const verbatimReceipt = document.getElementById('verbatimReceipt').checked;
     const tokenResponse = document.getElementById('tokenResponse').checked;
     
-    // Generate UUID v4
     function generateUUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             const r = Math.random() * 16 | 0;
@@ -1346,19 +1241,26 @@ window.generateResponseJSON = function() {
         });
     }
     
-    // Get current ISO datetime
     const now = new Date().toISOString();
-    
-    // Calculate total amount (amount + tip)
     const totalAmount = (parseFloat(amount) + parseFloat(tip)).toFixed(2);
     
-    // Generate sample receipt content
-    const receiptContent = verbatimReceipt ? `MERCHANT NAME|123 Main St|City, State|Tel: 555-1234||SALE TRANSACTION|Date: ${new Date().toLocaleDateString()}|Time: ${new Date().toLocaleTimeString()}||Amount: ${amount}|Tip: ${tip}|Total: ${totalAmount}||Card: ************1234|Auth: ${Math.floor(Math.random() * 900000 + 100000)}||APPROVED - THANK YOU|` : undefined;
+    // Map response transaction types to codes
+    const responseTransactionConfig = {
+        'Sale': { transactionType: 'CRDP', messageFunction: 'AUTP' },
+        'Refund': { transactionType: 'RFND', messageFunction: 'RFNP' },
+        'PreAuth': { transactionType: 'RESV', messageFunction: 'FAUP' },
+        'PreAuthCompletion': { transactionType: 'RESV', messageFunction: 'CMPK' },
+        'TipAdjustment': { transactionType: 'CRDP', messageFunction: 'TADK' }
+    };
+    
+    const config = responseTransactionConfig[responseTransactionType] || responseTransactionConfig['Sale'];
+    
+    const receiptContent = verbatimReceipt ? `MERCHANT NAME|123 Main St|City, State|Tel: 555-1234||${responseTransactionType.toUpperCase()} TRANSACTION|Date: ${new Date().toLocaleDateString()}|Time: ${new Date().toLocaleTimeString()}||Amount: ${amount}|Tip: ${tip}|Total: ${totalAmount}||Card: ************1234|Auth: ${Math.floor(Math.random() * 900000 + 100000)}||APPROVED - THANK YOU|` : undefined;
     
     const jsonData = {
         "OCserviceResponse": {
             "header": {
-                "messageFunction": "AUTP",
+                "messageFunction": config.messageFunction,
                 "protocolVersion": "2.0",
                 "exchangeIdentification": generateUUID(),
                 "creationDateTime": now,
@@ -1397,7 +1299,7 @@ window.generateResponseJSON = function() {
                 },
                 "paymentResponse": {
                     "paymentTransaction": {
-                        "transactionType": "CRDP",
+                        "transactionType": config.transactionType,
                         "transactionIdentification": "TXN" + Math.floor(Math.random() * 100000000),
                         "authorisationCode": String(Math.floor(Math.random() * 900000 + 100000)),
                         "transactionDetails": {
@@ -1422,12 +1324,10 @@ window.generateResponseJSON = function() {
         }
     };
     
-    // Add payment token if checkbox is checked
     if (tokenResponse) {
         jsonData.OCserviceResponse.serviceResponse.paymentResponse.paymentTransaction.paymentInstrumentData.cardData.paymentToken = "TKN" + generateUUID().replace(/-/g, '').substring(0, 32);
     }
     
-    // Add receipt content if verbatim receipt is checked
     if (verbatimReceipt && receiptContent) {
         jsonData.OCserviceResponse.serviceResponse.paymentResponse.outputContent = receiptContent;
     }
