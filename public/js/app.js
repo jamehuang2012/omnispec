@@ -159,6 +159,9 @@ function renderSpecTree() {
         structureToShow = 'OCsessionManagementRequest';
     } else if (transactionType === 'Void') {
         structureToShow = 'OCserviceRequestReversal';
+    } else if (transactionType === 'Settle') {
+        structureToShow = 'OCserviceRequestBatch';
+    
     } else {
         structureToShow = 'OCserviceRequest';
     }
@@ -212,11 +215,13 @@ function renderSpecTree() {
     }
     
     // Only render the selected structure
-    if (specStructure[structureToShow]) {
-        // For reversal, display as OCserviceRequest in the tree but use reversal structure
-        const displayName = structureToShow === 'OCserviceRequestReversal' ? 'OCserviceRequest' : structureToShow;
-        createNode(displayName, specStructure[structureToShow]);
-    }
+  if (specStructure[structureToShow]) {
+    // For reversal and batch, display as OCserviceRequest in the tree but use their specific structures
+    const displayName = (structureToShow === 'OCserviceRequestReversal' || structureToShow === 'OCserviceRequestBatch') 
+        ? 'OCserviceRequest' 
+        : structureToShow;
+    createNode(displayName, specStructure[structureToShow]);
+}
 }
 
 // Render Data Types

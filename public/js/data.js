@@ -147,7 +147,9 @@ export const dataTypes = {
     'ST-LocalReferenceId': { type: 'TextString', length: '[1,35]', desc: 'Local reference identifier', baseType: 'TextString' },
     'ST-ServiceAttribute': { type: 'CodeSet', codeSet: 'CS-ServiceAttribute', length: '{4}', desc: 'Service attribute for reservations, recurring payments, and stored credentials' },
     'ST-AmountQualifier': { type: 'CodeSet', codeSet: 'CS-AmountQualifier', length: '{4}', desc: 'Qualifier for the amount (actual, estimated, maximum, or incremental)' },
-    'ST-PaymentToken': { type: 'TextString', length: '[1,70]', desc: 'Payment token for stored credentials', baseType: 'TextString' }
+    'ST-PaymentToken': { type: 'TextString', length: '[1,70]', desc: 'Payment token for stored credentials', baseType: 'TextString' },
+    'ST-RemoveAllFlag': { type: 'Indicator', length: '{1}', desc: 'Batch settlement flag: "1" = Batch close, "0" = Host Total', baseType: 'Indicator' },
+    'ST-POIReconciliationID': { type: 'TextString', length: '[1,10]', desc: 'POI Reconciliation Identifier', baseType: 'TextString' }
 };
 
 // Code Sets Definitions
@@ -617,7 +619,7 @@ export const specStructure = {
             },
             serviceContent: { type: 'ST-ServiceContent', cardinality: '[1..1]' },
             reportTransactionRequest: {
-                reportType: { type: 'ST-ReportType', cardinality: '[1..1]'                 }
+                reportType: { type: 'ST-ReportType', cardinality: '[1..1]' }
             }
         }
     },
@@ -655,6 +657,48 @@ export const specStructure = {
                     exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]' }
                 },
                 state: { type: 'ST-State', cardinality: '[0..1]', desc: 'BUSY/IDLE required only for exchangeAction is "NOTI"' }
+            }
+        }
+    },
+    OCserviceRequestBatch: {
+        header: {
+            messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
+            protocolVersion: { type: 'ST-ProtocolVersion', cardinality: '[1..1]' },
+            exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]' },
+            creationDateTime: { type: 'ISODateTime', cardinality: '[1..1]' },
+            initiatingParty: {
+                identification: { type: 'ST-Identification', cardinality: '[1..1]' },
+                type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' },
+                authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[1..1]' }
+            },
+            recipientParty: {
+                identification: { type: 'ST-Identification', cardinality: '[0..1]' },
+                type: { type: 'ST-DeviceType', cardinality: '[0..1]' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' }
+            }
+        },
+        serviceRequest: {
+            environment: {
+                merchant: { 
+                    identification: { type: 'ST-Identification', cardinality: '[1..1]' } 
+                },
+                POI: { 
+                    identification: { type: 'ST-Identification', cardinality: '[1..1]' } 
+                }
+            },
+            context: {
+                saleContext: {
+                    saleIdentification: { type: 'ST-SaleIdentification', cardinality: '[0..1]' },
+                    saleReferenceNumber: { type: 'ST-SaleReferenceNumber', cardinality: '[0..1]' },
+                    SaleReconciliationIdentification: { type: 'ST-SaleReconciliationIdentification', cardinality: '[0..1]' },
+                    cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
+                    invoiceNumber: { type: 'ST-InvoiceNumber', cardinality: '[0..1]' }
+                }
+            },
+            serviceContent: { type: 'ST-ServiceContent', cardinality: '[1..1]' },
+            batchRequest: {
+                removeAllFlag: { type: 'ST-RemoveAllFlag', cardinality: '[1..1]', desc: '"1": Batch close, "0": Host Total' }
             }
         }
     },
