@@ -286,6 +286,7 @@ window.handleTransactionTypeChange = function() {
     const exchangeActionGroup = document.querySelector('[data-field="exchangeAction"]');
     const exchangeTypeGroup = document.querySelector('[data-field="exchangeType"]');
     const deviceStateGroup = document.querySelector('[data-field="deviceState"]');
+    const exchangeIdentificationGroup = document.querySelector('[data-field="exchangeIdentification"]');
     
     // Hide all conditional fields first
     tipGroup.style.display = 'none';
@@ -294,6 +295,7 @@ window.handleTransactionTypeChange = function() {
     exchangeActionGroup.style.display = 'none';
     exchangeTypeGroup.style.display = 'none';
     deviceStateGroup.style.display = 'none';
+    exchangeIdentificationGroup.style.display = 'none';
     
     // Show TIP only for SALE transactions
     if (transactionType === 'Sale') {
@@ -314,10 +316,26 @@ window.handleTransactionTypeChange = function() {
         exchangeActionGroup.style.display = 'block';
         exchangeTypeGroup.style.display = 'block';
         deviceStateGroup.style.display = 'block';
+        // Check if exchange action requires identification
+        handleExchangeActionChange();
     }
     
     // Re-render the spec tree to show the appropriate message structure
     renderSpecTree();
+};
+
+// Handle exchange action changes to show/hide exchange identification
+window.handleExchangeActionChange = function() {
+    const exchangeAction = document.getElementById('exchangeAction').value;
+    const exchangeIdentificationGroup = document.querySelector('[data-field="exchangeIdentification"]');
+    
+    // Show Exchange Identification field for RETR, RECV, or CANC
+    if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
+        exchangeIdentificationGroup.style.display = 'block';
+    } else {
+        exchangeIdentificationGroup.style.display = 'none';
+        document.getElementById('exchangeIdentification').value = '';
+    }
 };
 
 // Helper function to generate sample values for different types
@@ -867,6 +885,7 @@ window.generateJSON = function() {
         const exchangeAction = document.getElementById('exchangeAction').value;
         const exchangeType = document.getElementById('exchangeType').value;
         const deviceState = document.getElementById('deviceState').value;
+        const exchangeIdentificationInput = document.getElementById('exchangeIdentification').value;
         
         jsonData = {
             [rootElementName]: {
@@ -901,7 +920,9 @@ window.generateJSON = function() {
             
             // Add exchangeIdentification for RETR/RECV/CANC
             if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
-                jsonData[rootElementName].sessionManagementRequest.POIComponent.POIGroupIdentification.exchangeIdentification = generateUUID();
+                // Use user-provided value or generate UUID
+                const exchangeId = exchangeIdentificationInput || generateUUID();
+                jsonData[rootElementName].sessionManagementRequest.POIComponent.POIGroupIdentification.exchangeIdentification = exchangeId;
             }
             
             // Add state if provided
@@ -918,9 +939,16 @@ window.generateJSON = function() {
                 }
             };
             
-            // Add exchangeIdentification if provided
-            if (exchangeAction !== 'INIT') {
-                jsonData[rootElementName].sessionManagementRequest.POSComponent.POSGroupIdentification.exchangeIdentification = generateUUID();
+            // Add exchangeIdentification for RETR/RECV/CANC
+            if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
+                // Use user-provided value or generate UUID
+                const exchangeId = exchangeIdentificationInput || generateUUID();
+                jsonData[rootElementName].sessionManagementRequest.POSComponent.POSGroupIdentification.exchangeIdentification = exchangeId;
+            } else if (exchangeAction !== 'INIT' && exchangeAction !== 'NOTI') {
+                // For other actions, optionally add exchangeIdentification if provided
+                if (exchangeIdentificationInput) {
+                    jsonData[rootElementName].sessionManagementRequest.POSComponent.POSGroupIdentification.exchangeIdentification = exchangeIdentificationInput;
+                }
             }
             
             // Add state - required as BUSY/IDLE for NOTI action

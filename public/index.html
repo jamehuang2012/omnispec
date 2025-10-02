@@ -84,13 +84,18 @@
                     
                     <div class="control-group" data-field="exchangeAction" style="display: none;">
                         <label for="exchangeAction">Exchange Action:</label>
-                        <select id="exchangeAction">
+                        <select id="exchangeAction" onchange="handleExchangeActionChange()">
                             <option value="INIT">INIT - Initialize</option>
                             <option value="NOTI">NOTI - Notification</option>
                             <option value="RETR">RETR - Retrieve transaction</option>
                             <option value="RECV">RECV - Recover session</option>
                             <option value="CANC">CANC - Cancel transaction</option>
                         </select>
+                    </div>
+                    
+                    <div class="control-group" data-field="exchangeIdentification" style="display: none;">
+                        <label for="exchangeIdentification">Exchange Identification:</label>
+                        <input type="text" id="exchangeIdentification" placeholder="UUID for RETR/RECV/CANC">
                     </div>
                     
                     <div class="control-group" data-field="exchangeType" style="display: none;">
