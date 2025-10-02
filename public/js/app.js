@@ -328,6 +328,7 @@ window.handleTransactionTypeChange = function() {
 window.handleExchangeActionChange = function() {
     const exchangeAction = document.getElementById('exchangeAction').value;
     const exchangeIdentificationGroup = document.querySelector('[data-field="exchangeIdentification"]');
+    const deviceStateSelect = document.getElementById('deviceState');
     
     // Show Exchange Identification field for RETR, RECV, or CANC
     if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
@@ -335,6 +336,25 @@ window.handleExchangeActionChange = function() {
     } else {
         exchangeIdentificationGroup.style.display = 'none';
         document.getElementById('exchangeIdentification').value = '';
+    }
+    
+    // Update Device State options based on Exchange Action
+    if (exchangeAction === 'NOTI') {
+        // For NOTI, only show BUSY and IDLE
+        deviceStateSelect.innerHTML = `
+            <option value="">Select State (Required for NOTI)</option>
+            <option value="BUSY">Busy</option>
+            <option value="IDLE">Idle</option>
+        `;
+    } else {
+        // For other actions, show all states
+        deviceStateSelect.innerHTML = `
+            <option value="">None</option>
+            <option value="BUSY">Busy</option>
+            <option value="IDLE">Idle</option>
+            <option value="UNAV">Unavailable</option>
+            <option value="OFFL">Offline</option>
+        `;
     }
 };
 
@@ -917,6 +937,11 @@ window.generateJSON = function() {
                 }
             };
             
+            // Add exchangeType only if not NORM (default)
+            if (exchangeType && exchangeType !== 'NORM') {
+                jsonData[rootElementName].sessionManagementRequest.POIComponent.POIGroupIdentification.exchangeType = exchangeType;
+            }
+            
             // Add exchangeIdentification for RETR/RECV/CANC
             if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
                 // Use user-provided value or generate UUID
@@ -936,6 +961,11 @@ window.generateJSON = function() {
                     "exchangeAction": exchangeAction
                 }
             };
+            
+            // Add exchangeType only if not NORM (default)
+            if (exchangeType && exchangeType !== 'NORM') {
+                jsonData[rootElementName].sessionManagementRequest.POSComponent.POSGroupIdentification.exchangeType = exchangeType;
+            }
             
             // Add exchangeIdentification for RETR/RECV/CANC
             if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
