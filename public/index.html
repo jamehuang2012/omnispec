@@ -52,6 +52,7 @@
                             <option value="PreAuthCompletion">PRE-AUTH COMPLETION</option>
                             <option value="Settle">SETTLE</option>
                             <option value="Report">REPORT</option>
+                            <option value="SessionManagement">SESSION-MANAGEMENT</option>
                         </select>
                     </div>
                     
@@ -70,6 +71,45 @@
                             <option value="TRRP">Transaction Receipt Reprint</option>
                             <option value="TMCD">Terminal Configuration Detail</option>
                             <option value="PARD" selected>PreAuth Details Report</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" data-field="sessionType" style="display: none;">
+                        <label for="sessionType">Session Component:</label>
+                        <select id="sessionType">
+                            <option value="POI">POI Component (Terminal Side)</option>
+                            <option value="POS">POS Component (Register Side)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" data-field="exchangeAction" style="display: none;">
+                        <label for="exchangeAction">Exchange Action:</label>
+                        <select id="exchangeAction">
+                            <option value="INIT">Initialize</option>
+                            <option value="NOTI">Notification</option>
+                            <option value="RETR">Retrieve</option>
+                            <option value="RECV">Recover</option>
+                            <option value="CANC">Cancellation</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" data-field="exchangeType" style="display: none;">
+                        <label for="exchangeType">Exchange Type:</label>
+                        <select id="exchangeType">
+                            <option value="NORM">Normal</option>
+                            <option value="EROR">Error</option>
+                            <option value="WARN">Warning</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" data-field="deviceState" style="display: none;">
+                        <label for="deviceState">Device State:</label>
+                        <select id="deviceState">
+                            <option value="">None</option>
+                            <option value="BUSY">Busy</option>
+                            <option value="IDLE">Idle</option>
+                            <option value="UNAV">Unavailable</option>
+                            <option value="OFFL">Offline</option>
                         </select>
                     </div>
                     

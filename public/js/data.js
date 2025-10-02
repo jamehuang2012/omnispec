@@ -143,7 +143,8 @@ export const dataTypes = {
     'ST-Amount': { type: 'Decimal', length: '[1,15]', desc: 'Monetary amount (e.g., "1.00")', baseType: 'Amount' },
     'ST-MOTOIndicator': { type: 'Boolean', length: '{5}', desc: 'Mail Order/Telephone Order indicator', baseType: 'Boolean' },
     'ST-PaymentTokenRequested': { type: 'TextString', length: '[1,10]', desc: 'Payment token requested indicator', baseType: 'TextString' },
-    'ST-PeriodUnit': { type: 'TextString', length: '[1,10]', desc: 'Period unit (daily, weekly, monthly)', baseType: 'TextString' }
+    'ST-PeriodUnit': { type: 'TextString', length: '[1,10]', desc: 'Period unit (daily, weekly, monthly)', baseType: 'TextString' },
+    'ST-LocalReferenceId': { type: 'TextString', length: '[1,35]', desc: 'Local reference identifier', baseType: 'TextString' }
 };
 
 // Code Sets Definitions
@@ -312,6 +313,24 @@ export const codeSets = {
         { code: 'TRRP', name: 'TransactionReceiptReprint', desc: 'Transaction receipt Reprint (Requires context)' },
         { code: 'TMCD', name: 'TerminalConfigurationDetail', desc: 'Terminal Configuration Detail' },
         { code: 'PARD', name: 'PreAuthDetailsReport', desc: 'PreAuth Details Report' }
+    ],
+    'CS-ExchangeAction': [
+        { code: 'INIT', name: 'Initialize', desc: 'Initialize session' },
+        { code: 'NOTI', name: 'Notification', desc: 'Notification of state' },
+        { code: 'RETR', name: 'Retrieve', desc: 'Retrieve transaction' },
+        { code: 'RECV', name: 'Recover', desc: 'Recover session' },
+        { code: 'CANC', name: 'Cancellation', desc: 'Cancel transaction' }
+    ],
+    'CS-ExchangeType': [
+        { code: 'NORM', name: 'Normal', desc: 'Normal exchange' },
+        { code: 'EROR', name: 'Error', desc: 'Error condition' },
+        { code: 'WARN', name: 'Warning', desc: 'Warning condition' }
+    ],
+    'CS-State': [
+        { code: 'BUSY', name: 'Busy', desc: 'Device is busy' },
+        { code: 'IDLE', name: 'Idle', desc: 'Device is idle' },
+        { code: 'UNAV', name: 'Unavailable', desc: 'Device is unavailable' },
+        { code: 'OFFL', name: 'Offline', desc: 'Device is offline' }
     ]
 };
 
@@ -532,7 +551,44 @@ export const specStructure = {
             },
             serviceContent: { type: 'ST-ServiceContent', cardinality: '[1..1]' },
             reportTransactionRequest: {
-                reportType: { type: 'ST-ReportType', cardinality: '[1..1]' }
+                reportType: { type: 'ST-ReportType', cardinality: '[1..1]'                 }
+            }
+        }
+    },
+    OCsessionManagementRequest: {
+        header: {
+            messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
+            protocolVersion: { type: 'ST-ProtocolVersion', cardinality: '[1..1]' },
+            exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]' },
+            creationDateTime: { type: 'ISODateTime', cardinality: '[1..1]' },
+            initiatingParty: {
+                identification: { type: 'ST-Identification', cardinality: '[1..1]' },
+                type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' },
+                authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[1..1]' }
+            }
+        },
+        sessionManagementRequest: {
+            POIComponent: {
+                POIIdentification: {
+                    identification: { type: 'ST-Identification', cardinality: '[0..1]' },
+                    serialNumber: { type: 'ST-SerialNumber', cardinality: '[0..1]' }
+                },
+                POIGroupIdentification: {
+                    exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]', desc: 'Required for Retrieve/Recover/Cancellation' },
+                    exchangeType: { type: 'ST-ExchangeType', cardinality: '[0..1]' },
+                    exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]', desc: 'Required for Retrieve/Recover/Cancellation' }
+                },
+                state: { type: 'ST-State', cardinality: '[0..1]' }
+            },
+            POSComponent: {
+                cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
+                POSGroupIdentification: {
+                    exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]' },
+                    exchangeType: { type: 'ST-ExchangeType', cardinality: '[1..1]' },
+                    exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]' }
+                },
+                state: { type: 'ST-State', cardinality: '[0..1]', desc: 'BUSY/IDLE required only for exchangeAction is "NOTI"' }
             }
         }
     }

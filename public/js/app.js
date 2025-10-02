@@ -152,7 +152,14 @@ function renderSpecTree() {
     const transactionType = transactionTypeElement ? transactionTypeElement.value : 'Sale';
     
     // Determine which structure to display
-    const structureToShow = transactionType === 'Report' ? 'OCreportRequest' : 'OCserviceRequest';
+    let structureToShow;
+    if (transactionType === 'Report') {
+        structureToShow = 'OCreportRequest';
+    } else if (transactionType === 'SessionManagement') {
+        structureToShow = 'OCsessionManagementRequest';
+    } else {
+        structureToShow = 'OCserviceRequest';
+    }
     
     function createNode(name, data, level = 0) {
         const div = document.createElement('div');
@@ -275,20 +282,38 @@ window.handleTransactionTypeChange = function() {
     const transactionType = document.getElementById('transactionType').value;
     const tipGroup = document.querySelector('[data-field="tip"]');
     const reportTypeGroup = document.querySelector('[data-field="reportType"]');
+    const sessionTypeGroup = document.querySelector('[data-field="sessionType"]');
+    const exchangeActionGroup = document.querySelector('[data-field="exchangeAction"]');
+    const exchangeTypeGroup = document.querySelector('[data-field="exchangeType"]');
+    const deviceStateGroup = document.querySelector('[data-field="deviceState"]');
+    
+    // Hide all conditional fields first
+    tipGroup.style.display = 'none';
+    reportTypeGroup.style.display = 'none';
+    sessionTypeGroup.style.display = 'none';
+    exchangeActionGroup.style.display = 'none';
+    exchangeTypeGroup.style.display = 'none';
+    deviceStateGroup.style.display = 'none';
     
     // Show TIP only for SALE transactions
     if (transactionType === 'Sale') {
         tipGroup.style.display = 'block';
+        document.getElementById('tip').value = '0.00';
     } else {
-        tipGroup.style.display = 'none';
-        document.getElementById('tip').value = '0.00'; // Reset tip
+        document.getElementById('tip').value = '0.00';
     }
     
     // Show Report Type only for REPORT transactions
     if (transactionType === 'Report') {
         reportTypeGroup.style.display = 'block';
-    } else {
-        reportTypeGroup.style.display = 'none';
+    }
+    
+    // Show Session Management fields for SESSION-MANAGEMENT
+    if (transactionType === 'SessionManagement') {
+        sessionTypeGroup.style.display = 'block';
+        exchangeActionGroup.style.display = 'block';
+        exchangeTypeGroup.style.display = 'block';
+        deviceStateGroup.style.display = 'block';
     }
     
     // Re-render the spec tree to show the appropriate message structure
@@ -770,13 +795,23 @@ window.generateJSON = function() {
         'Report': {
             messageFunction: 'RPTQ',  // reportRequest
             serviceContent: 'FSPQ'
+        },
+        'SessionManagement': {
+            messageFunction: 'SASQ',  // sessionManagementRequest
         }
     };
     
     const config = transactionConfig[transactionType] || transactionConfig['Sale'];
     
     // Determine root element name based on transaction type
-    const rootElementName = transactionType === 'Report' ? 'OCreportRequest' : 'OCserviceRequest';
+    let rootElementName;
+    if (transactionType === 'Report') {
+        rootElementName = 'OCreportRequest';
+    } else if (transactionType === 'SessionManagement') {
+        rootElementName = 'OCsessionManagementRequest';
+    } else {
+        rootElementName = 'OCserviceRequest';
+    }
     
     let jsonData;
     
@@ -826,6 +861,75 @@ window.generateJSON = function() {
                 }
             }
         };
+    } else if (transactionType === 'SessionManagement') {
+        // Session Management request structure
+        const sessionType = document.getElementById('sessionType').value;
+        const exchangeAction = document.getElementById('exchangeAction').value;
+        const exchangeType = document.getElementById('exchangeType').value;
+        const deviceState = document.getElementById('deviceState').value;
+        
+        jsonData = {
+            [rootElementName]: {
+                "header": {
+                    "messageFunction": config.messageFunction,
+                    "protocolVersion": "2.0",
+                    "exchangeIdentification": generateUUID(),
+                    "creationDateTime": now,
+                    "initiatingParty": {
+                        "identification": sessionType === 'POI' ? "11000499" : "20000004",
+                        "type": sessionType === 'POI' ? "TID" : "PID",
+                        "shortName": sessionType === 'POI' ? "Terminal  ID" : "Cash Register ID",
+                        "authenticationKey": generateUUID().toUpperCase()
+                    }
+                },
+                "sessionManagementRequest": {}
+            }
+        };
+        
+        // Add appropriate component based on session type
+        if (sessionType === 'POI') {
+            jsonData[rootElementName].sessionManagementRequest.POIComponent = {
+                "POIIdentification": {
+                    "identification": "11000499",
+                    "serialNumber": "SN" + Math.floor(Math.random() * 1000000)
+                },
+                "POIGroupIdentification": {
+                    "exchangeAction": exchangeAction,
+                    "exchangeType": exchangeType || "NORM"
+                }
+            };
+            
+            // Add exchangeIdentification for RETR/RECV/CANC
+            if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
+                jsonData[rootElementName].sessionManagementRequest.POIComponent.POIGroupIdentification.exchangeIdentification = generateUUID();
+            }
+            
+            // Add state if provided
+            if (deviceState) {
+                jsonData[rootElementName].sessionManagementRequest.POIComponent.state = deviceState;
+            }
+        } else {
+            // POS Component
+            jsonData[rootElementName].sessionManagementRequest.POSComponent = {
+                "cashierIdentification": clerkId || "CLERK001",
+                "POSGroupIdentification": {
+                    "exchangeAction": exchangeAction,
+                    "exchangeType": exchangeType || "NORM"
+                }
+            };
+            
+            // Add exchangeIdentification if provided
+            if (exchangeAction !== 'INIT') {
+                jsonData[rootElementName].sessionManagementRequest.POSComponent.POSGroupIdentification.exchangeIdentification = generateUUID();
+            }
+            
+            // Add state - required as BUSY/IDLE for NOTI action
+            if (exchangeAction === 'NOTI') {
+                jsonData[rootElementName].sessionManagementRequest.POSComponent.state = deviceState || "IDLE";
+            } else if (deviceState) {
+                jsonData[rootElementName].sessionManagementRequest.POSComponent.state = deviceState;
+            }
+        }
     } else {
         // Standard service request structure
         jsonData = {
