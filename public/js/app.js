@@ -157,6 +157,8 @@ function renderSpecTree() {
         structureToShow = 'OCreportRequest';
     } else if (transactionType === 'SessionManagement') {
         structureToShow = 'OCsessionManagementRequest';
+    } else if (transactionType === 'Void') {
+        structureToShow = 'OCserviceRequestReversal';
     } else {
         structureToShow = 'OCserviceRequest';
     }
@@ -211,7 +213,9 @@ function renderSpecTree() {
     
     // Only render the selected structure
     if (specStructure[structureToShow]) {
-        createNode(structureToShow, specStructure[structureToShow]);
+        // For reversal, display as OCserviceRequest in the tree but use reversal structure
+        const displayName = structureToShow === 'OCserviceRequestReversal' ? 'OCserviceRequest' : structureToShow;
+        createNode(displayName, specStructure[structureToShow]);
     }
 }
 
@@ -287,6 +291,7 @@ window.handleTransactionTypeChange = function() {
     const exchangeTypeGroup = document.querySelector('[data-field="exchangeType"]');
     const deviceStateGroup = document.querySelector('[data-field="deviceState"]');
     const exchangeIdentificationGroup = document.querySelector('[data-field="exchangeIdentification"]');
+    const originalTransactionIdGroup = document.querySelector('[data-field="originalTransactionId"]');
     
     // Hide all conditional fields first
     tipGroup.style.display = 'none';
@@ -296,6 +301,7 @@ window.handleTransactionTypeChange = function() {
     exchangeTypeGroup.style.display = 'none';
     deviceStateGroup.style.display = 'none';
     exchangeIdentificationGroup.style.display = 'none';
+    originalTransactionIdGroup.style.display = 'none';
     
     // Show TIP only for SALE transactions
     if (transactionType === 'Sale') {
@@ -318,6 +324,11 @@ window.handleTransactionTypeChange = function() {
         deviceStateGroup.style.display = 'block';
         // Check if exchange action requires identification
         handleExchangeActionChange();
+    }
+    
+    // Show Original Transaction ID for VOID
+    if (transactionType === 'Void') {
+        originalTransactionIdGroup.style.display = 'block';
     }
     
     // Re-render the spec tree to show the appropriate message structure
@@ -1098,11 +1109,17 @@ window.validatePayload = function() {
         // Determine root element
         if (jsonData.OCserviceRequest) {
             rootElementName = 'OCserviceRequest';
+            // Check if it's a reversal request (Void)
+            if (jsonData.OCserviceRequest.serviceRequest && jsonData.OCserviceRequest.serviceRequest.reversalRequest) {
+                rootElementName = 'OCserviceRequestReversal';
+            }
         } else if (jsonData.OCreportRequest) {
             rootElementName = 'OCreportRequest';
+        } else if (jsonData.OCsessionManagementRequest) {
+            rootElementName = 'OCsessionManagementRequest';
         } else {
             displayValidationResults({
-                errors: ['Invalid root element. Expected "OCserviceRequest" or "OCreportRequest".'],
+                errors: ['Invalid root element. Expected "OCserviceRequest", "OCreportRequest", or "OCsessionManagementRequest".'],
                 warnings: [],
                 info: []
             });
