@@ -145,7 +145,8 @@ export const dataTypes = {
     'ST-PaymentTokenRequested': { type: 'TextString', length: '[1,10]', desc: 'Payment token requested indicator', baseType: 'TextString' },
     'ST-PeriodUnit': { type: 'TextString', length: '[1,10]', desc: 'Period unit (daily, weekly, monthly)', baseType: 'TextString' },
     'ST-LocalReferenceId': { type: 'TextString', length: '[1,35]', desc: 'Local reference identifier', baseType: 'TextString' },
-    'ST-ServiceAttribute': { type: 'CodeSet', codeSet: 'CS-ServiceAttribute', length: '{4}', desc: 'Service attribute for reservations, recurring payments, and stored credentials' }
+    'ST-ServiceAttribute': { type: 'CodeSet', codeSet: 'CS-ServiceAttribute', length: '{4}', desc: 'Service attribute for reservations, recurring payments, and stored credentials' },
+    'ST-AmountQualifier': { type: 'CodeSet', codeSet: 'CS-AmountQualifier', length: '{4}', desc: 'Qualifier for the amount (actual, estimated, maximum, or incremental)' }
 };
 
 // Code Sets Definitions
@@ -344,6 +345,12 @@ export const codeSets = {
         { code: 'SCOF', name: 'SubsequentUnscheduledCOF', desc: 'Subsequent unscheduled Credential-On-File standing-instruction payment' },
         { code: 'ICIS', name: 'InitialCITStoredCredential', desc: 'Initial Cardholder-initiated stored credential payment' },
         { code: 'SCIS', name: 'SubsequentCITStoredCredential', desc: 'Subsequent Cardholder-initiated stored credential payment' }
+    ],
+    'CS-AmountQualifier': [
+        { code: 'ACTL', name: 'Actual', desc: 'Actual Amount' },
+        { code: 'ESTM', name: 'Estimated', desc: 'Estimated amount (the final amount could be above or below)' },
+        { code: 'MAXI', name: 'Maximum', desc: 'Maximum amount (the final amount must be less or equal)' },
+        { code: 'INCR', name: 'Incremental', desc: 'Incremental amount for reservation' }
     ]
 };
 
@@ -396,7 +403,7 @@ export const specStructure = {
                     transactionIdentification: { type: 'TextString', cardinality: '[1..1]' },
                     transactionDetails: {
                         totalAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
-                        amountQualifier: { type: 'CS-AmountQualifier', cardinality: '[0..1]' },
+                        amountQualifier: { type: 'ST-AmountQualifier', cardinality: '[0..1]' },
                         cumulativeAmount: { type: 'ST-Amount', cardinality: '[0..1]' },
                         validityDuration: { type: 'TextString', cardinality: '[0..1]' },
                         detailedAmount: {
