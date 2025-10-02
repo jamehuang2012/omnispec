@@ -30,11 +30,21 @@ export const basicDataTypes = {
         format: 'YYYY-MM-DD',
         example: '2025-10-01, 2024-12-31'
     },
+    'ISOTime': {
+        definition: 'A particular point in the progression of time in a day expressed in the hh:mm:ss format (24-hour clock).',
+        format: 'hh:mm:ss',
+        example: '14:30:00, 09:15:30, 23:59:59'
+    },
     'ISODateTime': {
         definition: 'A particular point in the progression of time defined by a mandatory date and a mandatory time component, expressed in either UTC time format (YYYY-MM-DDThh:mm:ss.sssZ), local time with UTC offset format (YYYY-MM-DDThh:mm:ss.sss+/-hh:mm), or local time format (YYYY-MM-DDThh:mm:ss.sss). These representations are defined in "XML Schema Part 2: Datatypes Second Edition - W3C Recommendation 28 October 2004" which is aligned with ISO 8601.',
         format: 'YYYY-MM-DDThh:mm:ss.sssZ',
         example: '2025-10-01T15:30:45.123Z',
         notes: 'Beginning/end of calendar day: 00:00:00 = beginning, 24:00:00 = end. Decimal fractions of seconds may be included. Involved parties shall agree on maximum number of digits allowed.'
+    },
+    'Number': {
+        definition: 'A numeric value representing an integer or decimal number. Used for counts, durations, quantities, and other numeric data.',
+        format: 'Integer or Decimal',
+        example: '1, 42, 3.5, 100'
     },
     'PercentageRate': {
         definition: 'Rate expressed as a percentage, that is, in hundredths, for example, 0.7 is 7/10 of a percent, and 7.0 is 7%.',

@@ -182,7 +182,12 @@ function renderSpecTree() {
             div.classList.add('clickable');
             div.addEventListener('click', (e) => {
                 e.stopPropagation();
-                showDataTypeModal(data.type);
+                // Check if it's a basic type first
+                if (basicDataTypes[data.type]) {
+                    showBasicTypeModal(data.type);
+                } else {
+                    showDataTypeModal(data.type);
+                }
             });
         }
         
