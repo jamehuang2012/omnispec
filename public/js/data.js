@@ -144,7 +144,8 @@ export const dataTypes = {
     'ST-MOTOIndicator': { type: 'Boolean', length: '{5}', desc: 'Mail Order/Telephone Order indicator', baseType: 'Boolean' },
     'ST-PaymentTokenRequested': { type: 'TextString', length: '[1,10]', desc: 'Payment token requested indicator', baseType: 'TextString' },
     'ST-PeriodUnit': { type: 'TextString', length: '[1,10]', desc: 'Period unit (daily, weekly, monthly)', baseType: 'TextString' },
-    'ST-LocalReferenceId': { type: 'TextString', length: '[1,35]', desc: 'Local reference identifier', baseType: 'TextString' }
+    'ST-LocalReferenceId': { type: 'TextString', length: '[1,35]', desc: 'Local reference identifier', baseType: 'TextString' },
+    'ST-ServiceAttribute': { type: 'CodeSet', codeSet: 'CS-ServiceAttribute', length: '{4}', desc: 'Service attribute for reservations, recurring payments, and stored credentials' }
 };
 
 // Code Sets Definitions
@@ -331,6 +332,18 @@ export const codeSets = {
         { code: 'IDLE', name: 'Idle', desc: 'Device is idle' },
         { code: 'UNAV', name: 'Unavailable', desc: 'Device is unavailable' },
         { code: 'OFFL', name: 'Offline', desc: 'Device is offline' }
+    ],
+    'CS-ServiceAttribute': [
+        { code: 'IRES', name: 'InitialReservation', desc: 'Initial reservation' },
+        { code: 'URES', name: 'UpdateReservation', desc: 'Update reservation' },
+        { code: 'PRES', name: 'PaymentReservation', desc: 'Payment after reservation' },
+        { code: 'ARES', name: 'AdditionalPayment', desc: 'Additional payment after reservation' },
+        { code: 'FREC', name: 'FirstRecurring', desc: 'Initial recurring payment' },
+        { code: 'RREC', name: 'FollowingRecurring', desc: 'Repeat recurring payment' },
+        { code: 'ICOF', name: 'InitialUnscheduledCOF', desc: 'Initial unscheduled Credential-On-File standing-instruction payment' },
+        { code: 'SCOF', name: 'SubsequentUnscheduledCOF', desc: 'Subsequent unscheduled Credential-On-File standing-instruction payment' },
+        { code: 'ICIS', name: 'InitialCITStoredCredential', desc: 'Initial Cardholder-initiated stored credential payment' },
+        { code: 'SCIS', name: 'SubsequentCITStoredCredential', desc: 'Subsequent Cardholder-initiated stored credential payment' }
     ]
 };
 
@@ -379,7 +392,7 @@ export const specStructure = {
             paymentRequest: {
                 paymentTransaction: {
                     transactionType: { type: 'ST-TransactionType', cardinality: '[1..1]' },
-                    serviceAttribute: { type: 'CS-ServiceAttribute', cardinality: '[0..1]' },
+                    serviceAttribute: { type: 'ST-ServiceAttribute', cardinality: '[0..1]' },
                     transactionIdentification: { type: 'TextString', cardinality: '[1..1]' },
                     transactionDetails: {
                         totalAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
