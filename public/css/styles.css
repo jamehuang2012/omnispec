@@ -196,6 +196,7 @@ label {
 
 select,
 input,
+textarea,
 button {
     width: 100%;
     padding: 10px;
@@ -206,10 +207,29 @@ button {
 }
 
 select:focus,
-input:focus {
+input:focus,
+textarea:focus {
     outline: none;
     border-color: #4facfe;
     box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+}
+
+.json-input {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    resize: vertical;
+    min-height: 500px;
+    max-height: 600px;
+    overflow: auto;
+    white-space: pre;
+    padding: 15px;
+}
+
+.json-input::placeholder {
+    color: #888;
 }
 
 button {
@@ -385,6 +405,45 @@ button:hover {
     background: #d4edda;
     border: 1px solid #c3e6cb;
     color: #155724;
+}
+
+.validation-summary {
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.validation-section {
+    margin-bottom: 20px;
+}
+
+.validation-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.validation-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.validation-section li {
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+#validationResults {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+#validationResults p {
+    margin-bottom: 15px;
+    color: #666;
 }
 
 .code-set-table {

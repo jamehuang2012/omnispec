@@ -411,6 +411,263 @@ function generateTravelData() {
     };
 }
 
+// Validation Functions
+function validateJSON(jsonData, rootElementName) {
+    const validationResults = {
+        errors: [],
+        warnings: [],
+        info: []
+    };
+    
+    const structure = specStructure[rootElementName];
+    const data = jsonData[rootElementName];
+    
+    if (!structure || !data) {
+        validationResults.errors.push('Invalid root element structure');
+        displayValidationResults(validationResults);
+        return;
+    }
+    
+    // Validate recursively
+    validateNode(data, structure, rootElementName, validationResults);
+    
+    // Display results
+    displayValidationResults(validationResults);
+}
+
+function validateNode(data, spec, path, results) {
+    if (!spec || typeof spec !== 'object') return;
+    
+    // Check each field in the spec
+    Object.keys(spec).forEach(key => {
+        const fieldSpec = spec[key];
+        const fieldPath = `${path}.${key}`;
+        const fieldValue = data[key];
+        
+        // Check if field has a type (leaf node)
+        if (fieldSpec.type) {
+            validateField(fieldValue, fieldSpec, fieldPath, results);
+        } else {
+            // It's a nested object
+            if (fieldValue !== undefined && fieldValue !== null) {
+                validateNode(fieldValue, fieldSpec, fieldPath, results);
+            } else {
+                // Check cardinality for nested objects
+                if (fieldSpec.cardinality && isRequired(fieldSpec.cardinality)) {
+                    results.errors.push(`Missing required field: ${fieldPath}`);
+                }
+            }
+        }
+    });
+}
+
+function validateField(value, spec, path, results) {
+    const cardinality = spec.cardinality;
+    const typeName = spec.type;
+    
+    // Check required fields
+    if (isRequired(cardinality)) {
+        if (value === undefined || value === null || value === '') {
+            results.errors.push(`Missing required field: ${path} (${cardinality})`);
+            return;
+        }
+    }
+    
+    // If field is optional and empty, skip further validation
+    if (value === undefined || value === null || value === '') {
+        return;
+    }
+    
+    // Get type definition
+    const typeDefinition = dataTypes[typeName];
+    
+    if (typeDefinition) {
+        // Validate length
+        if (typeDefinition.length) {
+            validateLength(value, typeDefinition.length, path, results);
+        }
+        
+        // Validate code set
+        if (typeDefinition.codeSet && codeSets[typeDefinition.codeSet]) {
+            validateCodeSet(value, typeDefinition.codeSet, path, results);
+        }
+        
+        // Validate base type format
+        if (typeDefinition.baseType) {
+            validateBaseType(value, typeDefinition.baseType, path, results);
+        }
+    } else {
+        // Direct basic type validation
+        validateBaseType(value, typeName, path, results);
+    }
+}
+
+function isRequired(cardinality) {
+    if (!cardinality) return false;
+    // [1..1] or [1..n] means required
+    return cardinality.startsWith('[1');
+}
+
+function validateLength(value, lengthSpec, path, results) {
+    const strValue = String(value);
+    const len = strValue.length;
+    
+    // Parse length specification
+    // {n} = exact length n
+    // [n,m] = between n and m
+    // [n,*] = at least n
+    
+    if (lengthSpec.startsWith('{') && lengthSpec.endsWith('}')) {
+        const exactLength = parseInt(lengthSpec.slice(1, -1));
+        if (len !== exactLength) {
+            results.errors.push(`${path}: Length must be exactly ${exactLength} (current: ${len})`);
+        }
+    } else if (lengthSpec.startsWith('[')) {
+        const match = lengthSpec.match(/\[(\d+),(\d+|\*)\]/);
+        if (match) {
+            const min = parseInt(match[1]);
+            const max = match[2] === '*' ? Infinity : parseInt(match[2]);
+            
+            if (len < min) {
+                results.errors.push(`${path}: Length must be at least ${min} (current: ${len})`);
+            } else if (len > max) {
+                results.errors.push(`${path}: Length must be at most ${max} (current: ${len})`);
+            }
+        }
+    }
+}
+
+function validateCodeSet(value, codeSetName, path, results) {
+    const codeSet = codeSets[codeSetName];
+    if (!codeSet) return;
+    
+    const validCodes = codeSet.map(c => c.code);
+    if (!validCodes.includes(value)) {
+        results.errors.push(`${path}: Invalid code "${value}". Valid codes: ${validCodes.join(', ')}`);
+    } else {
+        results.info.push(`${path}: Valid code "${value}"`);
+    }
+}
+
+function validateBaseType(value, baseTypeName, path, results) {
+    const strValue = String(value);
+    
+    switch(baseTypeName) {
+        case 'UUID':
+            const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            if (!uuidPattern.test(strValue)) {
+                results.errors.push(`${path}: Invalid UUID format`);
+            }
+            break;
+            
+        case 'ISODateTime':
+            const isoDateTimePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/;
+            if (!isoDateTimePattern.test(strValue)) {
+                results.errors.push(`${path}: Invalid ISO DateTime format (expected: YYYY-MM-DDThh:mm:ss.sssZ)`);
+            }
+            break;
+            
+        case 'ISODate':
+            const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+            if (!isoDatePattern.test(strValue)) {
+                results.errors.push(`${path}: Invalid ISO Date format (expected: YYYY-MM-DD)`);
+            }
+            break;
+            
+        case 'ISOTime':
+            const isoTimePattern = /^\d{2}:\d{2}:\d{2}$/;
+            if (!isoTimePattern.test(strValue)) {
+                results.errors.push(`${path}: Invalid ISO Time format (expected: hh:mm:ss)`);
+            }
+            break;
+            
+        case 'Boolean':
+            if (value !== true && value !== false) {
+                results.warnings.push(`${path}: Expected boolean value (true/false)`);
+            }
+            break;
+            
+        case 'Number':
+        case 'Decimal':
+            if (isNaN(value)) {
+                results.errors.push(`${path}: Must be a valid number`);
+            }
+            break;
+            
+        case 'DigitString':
+            if (!/^\d*$/.test(strValue)) {
+                results.errors.push(`${path}: Must contain only digits (0-9)`);
+            }
+            break;
+            
+        case 'Amount':
+            const amount = parseFloat(value);
+            if (isNaN(amount) || amount < 0) {
+                results.errors.push(`${path}: Must be a valid positive amount`);
+            }
+            if (!/^\d+\.\d{2}$/.test(strValue)) {
+                results.warnings.push(`${path}: Amount should have exactly 2 decimal places`);
+            }
+            break;
+    }
+}
+
+function displayValidationResults(results) {
+    const container = document.getElementById('validationResults');
+    
+    let html = '<div style="padding: 20px;">';
+    
+    // Summary
+    const totalIssues = results.errors.length + results.warnings.length;
+    if (totalIssues === 0) {
+        html += `<div class="validation-status validation-success" style="margin-bottom: 20px;">
+            <strong>✓ Validation Passed</strong><br>
+            No errors or warnings found. The request is valid.
+        </div>`;
+    } else {
+        html += `<div class="validation-summary" style="margin-bottom: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px;">
+            <strong>Validation Summary:</strong><br>
+            ${results.errors.length} Error(s), ${results.warnings.length} Warning(s)
+        </div>`;
+    }
+    
+    // Errors
+    if (results.errors.length > 0) {
+        html += '<div class="validation-section"><h3 style="color: #dc3545; margin-bottom: 10px;">❌ Errors</h3>';
+        html += '<ul style="list-style: none; padding: 0;">';
+        results.errors.forEach(error => {
+            html += `<li style="padding: 8px; margin-bottom: 5px; background: #f8d7da; border-left: 4px solid #dc3545; border-radius: 4px;">${error}</li>`;
+        });
+        html += '</ul></div>';
+    }
+    
+    // Warnings
+    if (results.warnings.length > 0) {
+        html += '<div class="validation-section" style="margin-top: 20px;"><h3 style="color: #ffc107; margin-bottom: 10px;">⚠️ Warnings</h3>';
+        html += '<ul style="list-style: none; padding: 0;">';
+        results.warnings.forEach(warning => {
+            html += `<li style="padding: 8px; margin-bottom: 5px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">${warning}</li>`;
+        });
+        html += '</ul></div>';
+    }
+    
+    // Info (Valid codes, etc.)
+    if (results.info.length > 0 && results.errors.length === 0) {
+        html += '<div class="validation-section" style="margin-top: 20px;"><h3 style="color: #28a745; margin-bottom: 10px;">ℹ️ Validation Details</h3>';
+        html += '<ul style="list-style: none; padding: 0;">';
+        results.info.slice(0, 10).forEach(info => {
+            html += `<li style="padding: 6px; margin-bottom: 3px; background: #d4edda; border-left: 4px solid #28a745; border-radius: 4px; font-size: 12px;">${info}</li>`;
+        });
+        if (results.info.length > 10) {
+            html += `<li style="padding: 6px; font-style: italic; color: #666;">...and ${results.info.length - 10} more valid fields</li>`;
+        }
+        html += '</ul></div>';
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
 // Generate JSON
 window.generateJSON = function() {
     const amount = parseFloat(document.getElementById('amount').value).toFixed(2);
@@ -654,6 +911,54 @@ window.generateJSON = function() {
     document.getElementById('jsonOutput').textContent = JSON.stringify(jsonData, null, 2);
     document.getElementById('validationStatus').innerHTML = 
         '<div class="validation-status validation-success">✓ JSON generated successfully</div>';
+    
+    // Also populate validation tab input
+    document.getElementById('validationInput').value = JSON.stringify(jsonData, null, 2);
+};
+
+// Validate Payload from Validation Tab
+window.validatePayload = function() {
+    const input = document.getElementById('validationInput').value.trim();
+    
+    if (!input) {
+        displayValidationResults({
+            errors: ['No payload provided. Please paste a JSON payload to validate.'],
+            warnings: [],
+            info: []
+        });
+        return;
+    }
+    
+    let jsonData;
+    let rootElementName;
+    
+    try {
+        jsonData = JSON.parse(input);
+        
+        // Determine root element
+        if (jsonData.OCserviceRequest) {
+            rootElementName = 'OCserviceRequest';
+        } else if (jsonData.OCreportRequest) {
+            rootElementName = 'OCreportRequest';
+        } else {
+            displayValidationResults({
+                errors: ['Invalid root element. Expected "OCserviceRequest" or "OCreportRequest".'],
+                warnings: [],
+                info: []
+            });
+            return;
+        }
+        
+        // Run validation
+        validateJSON(jsonData, rootElementName);
+        
+    } catch (e) {
+        displayValidationResults({
+            errors: [`JSON Parse Error: ${e.message}`],
+            warnings: [],
+            info: []
+        });
+    }
 };
 
 // Copy JSON to Clipboard

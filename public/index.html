@@ -155,10 +155,35 @@
         <!-- Tab Content: Validation -->
         <div class="tab-content" id="validationTab">
             <div class="panel">
-                <div class="panel-header">Validation Results</div>
+                <div class="panel-header">Validate JSON Payload</div>
                 <div class="panel-content">
-                    <div id="validationResults">
-                        <p>Validation information will appear here after generating a request.</p>
+                    <div style="margin-bottom: 15px;">
+                        <label for="validationInput" style="display: block; margin-bottom: 8px; font-weight: 600;">JSON Payload:</label>
+                        <textarea 
+                            id="validationInput" 
+                            class="json-input" 
+                            rows="15" 
+                            placeholder='Paste your JSON payload here, or generate one from the Request tab...
+
+Example:
+{
+  "OCserviceRequest": {
+    "header": { ... },
+    "serviceRequest": { ... }
+  }
+}'
+                        ></textarea>
+                    </div>
+                    <button onclick="validatePayload()" style="width: auto; margin-top: 0;">Validate Payload</button>
+                    
+                    <div id="validationResults" style="margin-top: 20px;">
+                        <p style="padding: 20px; text-align: center; color: #666; background: #f8f9fa; border-radius: 6px;">
+                            <strong>No validation performed yet.</strong><br><br>
+                            You can either:<br>
+                            • Generate a JSON from the <strong>Request</strong> tab (auto-populates here)<br>
+                            • Paste your own JSON payload above<br><br>
+                            Then click <strong>"Validate Payload"</strong> to check for errors.
+                        </p>
                     </div>
                 </div>
             </div>
