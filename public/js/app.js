@@ -1226,4 +1226,206 @@ document.addEventListener('DOMContentLoaded', () => {
     renderBasicTypes();
     generateJSON();
     handleTransactionTypeChange(); // Set initial field visibility
+    
+    // Initialize response tab
+    renderResponseDataTypes();
+    renderResponseSpecTree();
 });
+
+// Render Response Data Types
+function renderResponseDataTypes() {
+    const container = document.getElementById('responseDataTypes');
+    
+    let html = '<div style="padding:10px;background:#e3f2fd;border-radius:6px;margin-bottom:15px;">';
+    html += '<strong>Click data types below</strong> to view details and code sets in a popup dialog.</div>';
+    
+    Object.keys(dataTypes).forEach(name => {
+        const dt = dataTypes[name];
+        html += `<div class="data-type-item data-type-clickable" data-type="${name}">
+            <div class="data-type-name">${name}</div>
+            <div class="data-type-details">Type: ${dt.type}`;
+        
+        if (dt.length) html += ` | Length: ${dt.length}`;
+        if (dt.codeSet) html += ` | CodeSet: ${dt.codeSet}`;
+        if (dt.desc) html += `<br>${dt.desc}`;
+        
+        html += '</div></div>';
+    });
+    
+    container.innerHTML = html;
+    
+    // Add click handlers to data type items
+    container.querySelectorAll('.data-type-clickable').forEach(item => {
+        item.addEventListener('click', function() {
+            const typeName = this.getAttribute('data-type');
+            showDataTypeModal(typeName);
+        });
+    });
+}
+
+// Render Response Specification Tree
+function renderResponseSpecTree() {
+    const container = document.getElementById('responseSpecTree');
+    container.innerHTML = '';
+    
+    const structureToShow = 'OCserviceResponse';
+    
+    function createNode(name, data, level = 0) {
+        const div = document.createElement('div');
+        div.className = 'tree-node';
+        
+        const indent = '│  '.repeat(level);
+        const hasChildren = typeof data === 'object' && !data.type;
+        const toggle = hasChildren ? '▼' : ' ';
+        
+        let content = `${indent}<span class="tree-toggle">${toggle}</span><span class="tree-field">${name}</span>`;
+        
+        if (data.cardinality) {
+            content += ` <span class="tree-cardinality">${data.cardinality}</span>`;
+        }
+        
+        if (data.type) {
+            content += ` <span class="tree-type clickable-type">${data.type}</span>`;
+            
+            if (dataTypes[data.type] && dataTypes[data.type].length) {
+                content += ` <span class="tree-constraint">${dataTypes[data.type].length}</span>`;
+            }
+        }
+        
+        div.innerHTML = content;
+        
+        if (data.type) {
+            div.classList.add('clickable');
+            div.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Check if it's a basic type first
+                if (basicDataTypes[data.type]) {
+                    showBasicTypeModal(data.type);
+                } else {
+                    showDataTypeModal(data.type);
+                }
+            });
+        }
+        
+        container.appendChild(div);
+        
+        if (hasChildren) {
+            Object.keys(data).forEach(key => {
+                if (key !== 'type' && key !== 'cardinality') {
+                    createNode(key, data[key], level + 1);
+                }
+            });
+        }
+    }
+    
+    // Render the response structure
+    if (specStructure[structureToShow]) {
+        createNode(structureToShow, specStructure[structureToShow]);
+    }
+}
+
+// Generate Response JSON
+window.generateResponseJSON = function() {
+    const amount = parseFloat(document.getElementById('responseAmount').value).toFixed(2);
+    const tip = parseFloat(document.getElementById('responseTip').value).toFixed(2);
+    const reportType = document.getElementById('responseReportType').value;
+    const verbatimReceipt = document.getElementById('verbatimReceipt').checked;
+    const tokenResponse = document.getElementById('tokenResponse').checked;
+    
+    // Generate UUID v4
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+    
+    // Get current ISO datetime
+    const now = new Date().toISOString();
+    
+    // Calculate total amount (amount + tip)
+    const totalAmount = (parseFloat(amount) + parseFloat(tip)).toFixed(2);
+    
+    // Generate sample receipt content
+    const receiptContent = verbatimReceipt ? `MERCHANT NAME|123 Main St|City, State|Tel: 555-1234||SALE TRANSACTION|Date: ${new Date().toLocaleDateString()}|Time: ${new Date().toLocaleTimeString()}||Amount: ${amount}|Tip: ${tip}|Total: ${totalAmount}||Card: ************1234|Auth: ${Math.floor(Math.random() * 900000 + 100000)}||APPROVED - THANK YOU|` : undefined;
+    
+    const jsonData = {
+        "OCserviceResponse": {
+            "header": {
+                "messageFunction": "AUTP",
+                "protocolVersion": "2.0",
+                "exchangeIdentification": generateUUID(),
+                "creationDateTime": now,
+                "initiatingParty": {
+                    "identification": "11000499",
+                    "type": "TID",
+                    "shortName": "Terminal  ID"
+                },
+                "recipientParty": {
+                    "identification": "20000004",
+                    "type": "PID",
+                    "shortName": "Cash Register ID"
+                }
+            },
+            "serviceResponse": {
+                "environment": {
+                    "merchant": {
+                        "identification": "7800199838"
+                    },
+                    "POI": {
+                        "identification": "11000499"
+                    }
+                },
+                "context": {
+                    "saleContext": {
+                        "saleIdentification": "",
+                        "saleReferenceNumber": "",
+                        "cashierIdentification": "",
+                        "invoiceNumber": ""
+                    }
+                },
+                "serviceContent": "FSPP",
+                "response": {
+                    "result": "APPR",
+                    "responseReason": ""
+                },
+                "paymentResponse": {
+                    "paymentTransaction": {
+                        "transactionType": "CRDP",
+                        "transactionIdentification": "TXN" + Math.floor(Math.random() * 100000000),
+                        "authorisationCode": String(Math.floor(Math.random() * 900000 + 100000)),
+                        "transactionDetails": {
+                            "totalAmount": totalAmount,
+                            "tipAmount": tip,
+                            "detailedAmount": {
+                                "amountGoodsAndServices": amount,
+                                "gratuity": tip
+                            }
+                        },
+                        "paymentInstrumentData": {
+                            "paymentInstrumentType": "CARD",
+                            "cardData": {
+                                "entryMode": "CHIP",
+                                "maskedCardNumber": "************1234",
+                                "cardBrand": "VISA"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    
+    // Add payment token if checkbox is checked
+    if (tokenResponse) {
+        jsonData.OCserviceResponse.serviceResponse.paymentResponse.paymentTransaction.paymentInstrumentData.cardData.paymentToken = "TKN" + generateUUID().replace(/-/g, '').substring(0, 32);
+    }
+    
+    // Add receipt content if verbatim receipt is checked
+    if (verbatimReceipt && receiptContent) {
+        jsonData.OCserviceResponse.serviceResponse.paymentResponse.outputContent = receiptContent;
+    }
+    
+    document.getElementById('responseOutput').textContent = JSON.stringify(jsonData, null, 2);
+};

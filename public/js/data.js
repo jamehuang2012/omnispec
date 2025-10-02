@@ -146,7 +146,8 @@ export const dataTypes = {
     'ST-PeriodUnit': { type: 'TextString', length: '[1,10]', desc: 'Period unit (daily, weekly, monthly)', baseType: 'TextString' },
     'ST-LocalReferenceId': { type: 'TextString', length: '[1,35]', desc: 'Local reference identifier', baseType: 'TextString' },
     'ST-ServiceAttribute': { type: 'CodeSet', codeSet: 'CS-ServiceAttribute', length: '{4}', desc: 'Service attribute for reservations, recurring payments, and stored credentials' },
-    'ST-AmountQualifier': { type: 'CodeSet', codeSet: 'CS-AmountQualifier', length: '{4}', desc: 'Qualifier for the amount (actual, estimated, maximum, or incremental)' }
+    'ST-AmountQualifier': { type: 'CodeSet', codeSet: 'CS-AmountQualifier', length: '{4}', desc: 'Qualifier for the amount (actual, estimated, maximum, or incremental)' },
+    'ST-PaymentToken': { type: 'TextString', length: '[1,70]', desc: 'Payment token for stored credentials', baseType: 'TextString' }
 };
 
 // Code Sets Definitions
@@ -654,6 +655,72 @@ export const specStructure = {
                     exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]' }
                 },
                 state: { type: 'ST-State', cardinality: '[0..1]', desc: 'BUSY/IDLE required only for exchangeAction is "NOTI"' }
+            }
+        }
+    },
+    OCserviceResponse: {
+        header: {
+            messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
+            protocolVersion: { type: 'ST-ProtocolVersion', cardinality: '[1..1]' },
+            exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]' },
+            creationDateTime: { type: 'ISODateTime', cardinality: '[1..1]' },
+            initiatingParty: {
+                identification: { type: 'ST-Identification', cardinality: '[1..1]' },
+                type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' }
+            },
+            recipientParty: {
+                identification: { type: 'ST-Identification', cardinality: '[1..1]' },
+                type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' }
+            }
+        },
+        serviceResponse: {
+            environment: {
+                merchant: {
+                    identification: { type: 'ST-Identification', cardinality: '[1..1]' }
+                },
+                POI: {
+                    identification: { type: 'ST-Identification', cardinality: '[1..1]' }
+                }
+            },
+            context: {
+                saleContext: {
+                    saleIdentification: { type: 'ST-SaleIdentification', cardinality: '[0..1]' },
+                    saleReferenceNumber: { type: 'ST-SaleReferenceNumber', cardinality: '[0..1]' },
+                    cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
+                    invoiceNumber: { type: 'ST-InvoiceNumber', cardinality: '[0..1]' }
+                }
+            },
+            serviceContent: { type: 'ST-ServiceContent', cardinality: '[1..1]' },
+            response: {
+                result: { type: 'ST-Response', cardinality: '[1..1]' },
+                responseReason: { type: 'ST-ResponseReason', cardinality: '[0..1]' }
+            },
+            paymentResponse: {
+                paymentTransaction: {
+                    transactionType: { type: 'ST-TransactionType', cardinality: '[1..1]' },
+                    transactionIdentification: { type: 'ST-TransactionIdentification', cardinality: '[1..1]' },
+                    authorisationCode: { type: 'ST-AuthorisationCode', cardinality: '[0..1]' },
+                    transactionDetails: {
+                        totalAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
+                        tipAmount: { type: 'ST-Amount', cardinality: '[0..1]' },
+                        detailedAmount: {
+                            amountGoodsAndServices: { type: 'ST-Amount', cardinality: '[1..1]' },
+                            gratuity: { type: 'ST-Amount', cardinality: '[0..1]' }
+                        }
+                    },
+                    paymentInstrumentData: {
+                        paymentInstrumentType: { type: 'ST-PaymentInstrumentType', cardinality: '[1..1]' },
+                        cardData: {
+                            entryMode: { type: 'ST-EntryMode', cardinality: '[1..1]' },
+                            maskedCardNumber: { type: 'ST-MaskedCardNumber', cardinality: '[0..1]' },
+                            cardBrand: { type: 'ST-CardBrand', cardinality: '[0..1]' },
+                            paymentToken: { type: 'ST-PaymentToken', cardinality: '[0..1]' }
+                        }
+                    }
+                },
+                outputContent: { type: 'ST-OutputContent', cardinality: '[0..1]' }
             }
         }
     }
