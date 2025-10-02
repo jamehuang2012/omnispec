@@ -1,5 +1,29 @@
 import { dataTypes, codeSets, specStructure, basicDataTypes } from './data.js';
 
+// Tab Switching Function
+window.switchTab = function(tabName) {
+    // Hide all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    const selectedTab = document.getElementById(tabName + 'Tab');
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+    }
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+};
+
 // Modal Functions
 window.closeModal = function() {
     document.getElementById('dataTypeModal').classList.remove('show');
@@ -630,7 +654,7 @@ window.generateJSON = function() {
 // Copy JSON to Clipboard
 window.copyJSON = function() {
     const text = document.getElementById('jsonOutput').textContent;
-    const button = document.querySelector('.copy-btn');
+    const button = event.target;
     const originalText = button.textContent;
     
     // Try modern Clipboard API first
@@ -648,6 +672,29 @@ window.copyJSON = function() {
             });
     } else {
         // Fallback for older browsers
+        fallbackCopy(text, button, originalText);
+    }
+};
+
+// Copy Response Function
+window.copyResponse = function() {
+    const text = document.getElementById('responseOutput').textContent;
+    const button = event.target;
+    const originalText = button.textContent;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            })
+            .catch(err => {
+                console.error('Clipboard API failed:', err);
+                fallbackCopy(text, button, originalText);
+            });
+    } else {
         fallbackCopy(text, button, originalText);
     }
 };

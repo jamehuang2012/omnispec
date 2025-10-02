@@ -10,6 +10,13 @@
     <div class="container">
         <h1>Payment Specification Demo</h1>
         
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('request')">Request</button>
+            <button class="tab-btn" onclick="switchTab('response')">Response</button>
+            <button class="tab-btn" onclick="switchTab('validation')">Validation</button>
+        </div>
+        
         <!-- Modal for Data Type Details -->
         <div class="modal-overlay" id="dataTypeModal">
             <div class="modal-content">
@@ -21,113 +28,139 @@
             </div>
         </div>
         
-        <!-- Controls Panel -->
-        <div class="controls">
-            <div class="controls-grid">
-                <div class="control-group">
-                    <label for="amount">Amount:</label>
-                    <input type="number" id="amount" value="100.00" step="0.01" min="0">
+        <!-- Tab Content: Request -->
+        <div class="tab-content active" id="requestTab">
+            <!-- Controls Panel -->
+            <div class="controls">
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label for="amount">Amount:</label>
+                        <input type="number" id="amount" value="100.00" step="0.01" min="0">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="transactionType">Transaction Type:</label>
+                        <select id="transactionType" onchange="handleTransactionTypeChange()">
+                            <option value="Sale">SALE</option>
+                            <option value="MOTO">MOTO</option>
+                            <option value="Crypto">CRYPTO</option>
+                            <option value="Refund">REFUND</option>
+                            <option value="Void">VOID</option>
+                            <option value="TipAdjustment">TIP-ADJUSTMENT</option>
+                            <option value="PreAuth">PRE-AUTH</option>
+                            <option value="IncrementalAuth">INCREMENTAL-AUTH</option>
+                            <option value="PreAuthCompletion">PRE-AUTH COMPLETION</option>
+                            <option value="Settle">SETTLE</option>
+                            <option value="Report">REPORT</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" data-field="tip">
+                        <label for="tip">TIP:</label>
+                        <input type="number" id="tip" value="0.00" step="0.01" min="0">
+                    </div>
+                    
+                    <div class="control-group" data-field="reportType" style="display: none;">
+                        <label for="reportType">Report Type:</label>
+                        <select id="reportType">
+                            <option value="HSTS">Host Totals Summary</option>
+                            <option value="TMDR">Terminal Details Report</option>
+                            <option value="TMSH">Terminal Sales By Hour</option>
+                            <option value="TMTS">Terminal Totals Summary</option>
+                            <option value="TRRP">Transaction Receipt Reprint</option>
+                            <option value="TMCD">Terminal Configuration Detail</option>
+                            <option value="PARD" selected>PreAuth Details Report</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="clerkId">Clerk ID:</label>
+                        <input type="text" id="clerkId" placeholder="Clerk ID">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="invoiceNumber">Invoice Number:</label>
+                        <input type="text" id="invoiceNumber" placeholder="Invoice Number">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="localReferenceId">Local Reference ID:</label>
+                        <input type="text" id="localReferenceId" placeholder="Auto-generated">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="idType">ID Type:</label>
+                        <input type="text" id="idType" placeholder="ID Type">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="industryData">Industry Data:</label>
+                        <select id="industryData">
+                            <option value="none">None</option>
+                            <option value="vehicle">Vehicle Rental</option>
+                            <option value="lodging">Lodging</option>
+                            <option value="travel">Travel & Cruise</option>
+                        </select>
+                    </div>
                 </div>
-                
-                <div class="control-group">
-                    <label for="transactionType">Transaction Type:</label>
-                    <select id="transactionType" onchange="handleTransactionTypeChange()">
-                        <option value="Sale">SALE</option>
-                        <option value="MOTO">MOTO</option>
-                        <option value="Crypto">CRYPTO</option>
-                        <option value="Refund">REFUND</option>
-                        <option value="Void">VOID</option>
-                        <option value="TipAdjustment">TIP-ADJUSTMENT</option>
-                        <option value="PreAuth">PRE-AUTH</option>
-                        <option value="IncrementalAuth">INCREMENTAL-AUTH</option>
-                        <option value="PreAuthCompletion">PRE-AUTH COMPLETION</option>
-                        <option value="Settle">SETTLE</option>
-                        <option value="Report">REPORT</option>
-                    </select>
-                </div>
-                
-                <div class="control-group" data-field="tip">
-                    <label for="tip">TIP:</label>
-                    <input type="number" id="tip" value="0.00" step="0.01" min="0">
-                </div>
-                
-                <div class="control-group" data-field="reportType" style="display: none;">
-                    <label for="reportType">Report Type:</label>
-                    <select id="reportType">
-                        <option value="HSTS">Host Totals Summary</option>
-                        <option value="TMDR">Terminal Details Report</option>
-                        <option value="TMSH">Terminal Sales By Hour</option>
-                        <option value="TMTS">Terminal Totals Summary</option>
-                        <option value="TRRP">Transaction Receipt Reprint</option>
-                        <option value="TMCD">Terminal Configuration Detail</option>
-                        <option value="PARD" selected>PreAuth Details Report</option>
-                    </select>
-                </div>
-                
-                <div class="control-group">
-                    <label for="clerkId">Clerk ID:</label>
-                    <input type="text" id="clerkId" placeholder="Clerk ID">
-                </div>
-                
-                <div class="control-group">
-                    <label for="invoiceNumber">Invoice Number:</label>
-                    <input type="text" id="invoiceNumber" placeholder="Invoice Number">
-                </div>
-                
-                <div class="control-group">
-                    <label for="localReferenceId">Local Reference ID:</label>
-                    <input type="text" id="localReferenceId" placeholder="Auto-generated">
-                </div>
-                
-                <div class="control-group">
-                    <label for="idType">ID Type:</label>
-                    <input type="text" id="idType" placeholder="ID Type">
-                </div>
-                
-                <div class="control-group">
-                    <label for="industryData">Industry Data:</label>
-                    <select id="industryData">
-                        <option value="none">None</option>
-                        <option value="vehicle">Vehicle Rental</option>
-                        <option value="lodging">Lodging</option>
-                        <option value="travel">Travel & Cruise</option>
-                    </select>
-                </div>
+                <button onclick="generateJSON()">Generate JSON</button>
+                <div id="validationStatus"></div>
             </div>
-            <button onclick="generateJSON()">Generate JSON</button>
-            <div id="validationStatus"></div>
-        </div>
-        
-        <!-- Main Grid -->
-        <div class="demo-grid">
-            <div class="panel">
-                <div class="panel-header">Message Structure (Click for details)</div>
-                <div class="panel-content">
-                    <div class="spec-tree" id="specTree"></div>
+            
+            <!-- Main Grid -->
+            <div class="demo-grid">
+                <div class="panel">
+                    <div class="panel-header">Message Structure (Click for details)</div>
+                    <div class="panel-content">
+                        <div class="spec-tree" id="specTree"></div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-header">Data Types Reference</div>
+                    <div class="panel-content">
+                        <div class="data-types" id="dataTypes"></div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-header">Generated JSON</div>
+                    <div class="panel-content">
+                        <button class="copy-btn-top" onclick="copyJSON()">Copy JSON</button>
+                        <div class="json-output" id="jsonOutput">Click "Generate JSON"...</div>
+                    </div>
                 </div>
             </div>
             
-            <div class="panel">
-                <div class="panel-header">Data Types Reference</div>
+            <!-- Basic Data Types Section -->
+            <div class="panel" style="margin-top: 20px;">
+                <div class="panel-header">Basic Data Types Reference</div>
                 <div class="panel-content">
-                    <div class="data-types" id="dataTypes"></div>
-                </div>
-            </div>
-            
-            <div class="panel">
-                <div class="panel-header">Generated JSON</div>
-                <div class="panel-content">
-                    <button class="copy-btn-top" onclick="copyJSON()">Copy JSON</button>
-                    <div class="json-output" id="jsonOutput">Click "Generate JSON"...</div>
+                    <div class="basic-types" id="basicTypes"></div>
                 </div>
             </div>
         </div>
         
-        <!-- Basic Data Types Section -->
-        <div class="panel" style="margin-top: 20px;">
-            <div class="panel-header">Basic Data Types Reference</div>
-            <div class="panel-content">
-                <div class="basic-types" id="basicTypes"></div>
+        <!-- Tab Content: Response -->
+        <div class="tab-content" id="responseTab">
+            <div class="panel">
+                <div class="panel-header">Response JSON</div>
+                <div class="panel-content">
+                    <button class="copy-btn-top" onclick="copyResponse()">Copy Response</button>
+                    <div class="json-output" id="responseOutput">Response will appear here...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Content: Validation -->
+        <div class="tab-content" id="validationTab">
+            <div class="panel">
+                <div class="panel-header">Validation Results</div>
+                <div class="panel-content">
+                    <div id="validationResults">
+                        <p>Validation information will appear here after generating a request.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
