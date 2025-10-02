@@ -913,8 +913,7 @@ window.generateJSON = function() {
                     "serialNumber": "SN" + Math.floor(Math.random() * 1000000)
                 },
                 "POIGroupIdentification": {
-                    "exchangeAction": exchangeAction,
-                    "exchangeType": exchangeType || "NORM"
+                    "exchangeAction": exchangeAction
                 }
             };
             
@@ -934,8 +933,7 @@ window.generateJSON = function() {
             jsonData[rootElementName].sessionManagementRequest.POSComponent = {
                 "cashierIdentification": clerkId || "CLERK001",
                 "POSGroupIdentification": {
-                    "exchangeAction": exchangeAction,
-                    "exchangeType": exchangeType || "NORM"
+                    "exchangeAction": exchangeAction
                 }
             };
             
