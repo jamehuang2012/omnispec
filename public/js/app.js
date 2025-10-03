@@ -271,7 +271,7 @@ function renderBasicTypes() {
 
 window.handleTransactionTypeChange = function() {
     const transactionType = document.getElementById('transactionType').value;
-    const tipGroup = document.querySelector('[data-field="tip"]');
+    const gratuityGroup = document.querySelector('[data-field="gratuity"]');
     const reportTypeGroup = document.querySelector('[data-field="reportType"]');
     const sessionTypeGroup = document.querySelector('[data-field="sessionType"]');
     const exchangeActionGroup = document.querySelector('[data-field="exchangeAction"]');
@@ -280,7 +280,7 @@ window.handleTransactionTypeChange = function() {
     const exchangeIdentificationGroup = document.querySelector('[data-field="exchangeIdentification"]');
     const originalTransactionIdGroup = document.querySelector('[data-field="originalTransactionId"]');
     
-    tipGroup.style.display = 'none';
+    gratuityGroup.style.display = 'none';
     reportTypeGroup.style.display = 'none';
     sessionTypeGroup.style.display = 'none';
     exchangeActionGroup.style.display = 'none';
@@ -290,10 +290,10 @@ window.handleTransactionTypeChange = function() {
     originalTransactionIdGroup.style.display = 'none';
     
     if (transactionType === 'Sale') {
-        tipGroup.style.display = 'block';
-        document.getElementById('tip').value = '0.00';
+        gratuityGroup.style.display = 'block';
+        document.getElementById('gratuity').value = '0.00';
     } else {
-        document.getElementById('tip').value = '0.00';
+        document.getElementById('gratuity').value = '0.00';
     }
     
     if (transactionType === 'Report') {
@@ -823,7 +823,7 @@ function displayValidationResults(results) {
 
 window.generateJSON = function() {
     const amount = parseFloat(document.getElementById('amount').value).toFixed(2);
-    const tip = parseFloat(document.getElementById('tip').value).toFixed(2);
+    const gratuity = parseFloat(document.getElementById('gratuity').value).toFixed(2);
     const transactionType = document.getElementById('transactionType').value;
     const clerkId = document.getElementById('clerkId').value || '';
     const invoiceNumber = document.getElementById('invoiceNumber').value || '';
@@ -838,27 +838,8 @@ window.generateJSON = function() {
         });
     }
     
-    function generateLocalReferenceId() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
-        const random = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
-        return `${year}${month}${day}${hours}${minutes}${seconds}${milliseconds}${random}`;
-    }
-    
-    let localReferenceId = document.getElementById('localReferenceId').value;
-    if (!localReferenceId) {
-        localReferenceId = generateLocalReferenceId();
-        document.getElementById('localReferenceId').value = localReferenceId;
-    }
-    
     const now = new Date().toISOString();
-    const totalAmount = (parseFloat(amount) + parseFloat(tip)).toFixed(2);
+    const totalAmount = (parseFloat(amount) + parseFloat(gratuity)).toFixed(2);
     
     const transactionConfig = {
         'Sale': {
@@ -967,9 +948,7 @@ window.generateJSON = function() {
                         "saleContext": {
                             "saleIdentification": "",
                             "saleReferenceNumber": "",
-                            "SaleReconciliationIdentification": "",
-                            "cashierIdentification": clerkId,
-                            "invoiceNumber": invoiceNumber
+                            "SaleReconciliationIdentification": ""
                         }
                     },
                     "serviceContent": config.serviceContent,
@@ -979,6 +958,15 @@ window.generateJSON = function() {
                 }
             }
         };
+        
+        // Add optional fields only if they have values
+        if (clerkId) {
+            jsonData[rootElementName].reportRequest.context.saleContext.cashierIdentification = clerkId;
+        }
+        if (invoiceNumber) {
+            jsonData[rootElementName].reportRequest.context.saleContext.invoiceNumber = invoiceNumber;
+        }
+        
     } else if (transactionType === 'SessionManagement') {
         const sessionType = document.getElementById('sessionType').value;
         const exchangeAction = document.getElementById('exchangeAction').value;
@@ -1029,11 +1017,15 @@ window.generateJSON = function() {
             }
         } else {
             jsonData[rootElementName].sessionManagementRequest.POSComponent = {
-                "cashierIdentification": clerkId || "CLERK001",
                 "POSGroupIdentification": {
                     "exchangeAction": exchangeAction
                 }
             };
+            
+            // Add cashierIdentification only if provided
+            if (clerkId) {
+                jsonData[rootElementName].sessionManagementRequest.POSComponent.cashierIdentification = clerkId;
+            }
             
             if (exchangeType && exchangeType !== 'NORM') {
                 jsonData[rootElementName].sessionManagementRequest.POSComponent.POSGroupIdentification.exchangeType = exchangeType;
@@ -1085,10 +1077,9 @@ window.generateJSON = function() {
                     },
                     "context": {
                         "saleContext": {
-                            "cashierIdentification": clerkId,
-                            "invoiceNumber": invoiceNumber,
-                            "identificationType": idType,
-                            "localReferenceId": localReferenceId
+                            "saleIdentification": "",
+                            "saleReferenceNumber": "",
+                            "SaleReconciliationIdentification": ""
                         }
                     },
                     "serviceContent": config.serviceContent,
@@ -1097,18 +1088,33 @@ window.generateJSON = function() {
             }
         };
         
+        // Add optional saleContext fields only if they have values
+        if (clerkId) {
+            jsonData[rootElementName].serviceRequest.context.saleContext.cashierIdentification = clerkId;
+        }
+        if (invoiceNumber) {
+            jsonData[rootElementName].serviceRequest.context.saleContext.invoiceNumber = invoiceNumber;
+        }
+        if (idType) {
+            jsonData[rootElementName].serviceRequest.context.saleContext.identificationType = idType;
+        }
+        
         if (config.transactionType) {
             jsonData[rootElementName].serviceRequest.paymentRequest = {
                 "transactionType": config.transactionType,
                 "transactionDetails": {
                     "totalAmount": totalAmount,
-                    "tipAmount": tip,
                     "MOTOIndicator": config.motoIndicator || false,
                     "detailedAmount": {
                         "amountGoodsAndServices": amount
                     }
                 }
             };
+            
+            // Only add gratuity if gratuity > 0 (based on structure)
+            if (parseFloat(gratuity) > 0) {
+                jsonData[rootElementName].serviceRequest.paymentRequest.transactionDetails.detailedAmount.gratuity = gratuity;
+            }
             
             if (config.serviceAttribute) {
                 jsonData[rootElementName].serviceRequest.paymentRequest.serviceAttribute = config.serviceAttribute;
@@ -1404,7 +1410,7 @@ function renderResponseSpecTree() {
 window.generateResponseJSON = function() {
     const responseTransactionType = document.getElementById('responseTransactionType').value;
     const amount = parseFloat(document.getElementById('responseAmount').value).toFixed(2);
-    const tip = parseFloat(document.getElementById('responseTip').value).toFixed(2);
+    const gratuity = parseFloat(document.getElementById('responseGratuity').value).toFixed(2);
     const reportType = document.getElementById('responseReportType').value;
     const verbatimReceipt = document.getElementById('verbatimReceipt').checked;
     const tokenResponse = document.getElementById('tokenResponse').checked;
@@ -1418,7 +1424,7 @@ window.generateResponseJSON = function() {
     }
     
     const now = new Date().toISOString();
-    const totalAmount = (parseFloat(amount) + parseFloat(tip)).toFixed(2);
+    const totalAmount = (parseFloat(amount) + parseFloat(gratuity)).toFixed(2);
     
     // Map response transaction types to codes
     const responseTransactionConfig = {
@@ -1431,7 +1437,7 @@ window.generateResponseJSON = function() {
     
     const config = responseTransactionConfig[responseTransactionType] || responseTransactionConfig['Sale'];
     
-    const receiptContent = verbatimReceipt ? `MERCHANT NAME|123 Main St|City, State|Tel: 555-1234||${responseTransactionType.toUpperCase()} TRANSACTION|Date: ${new Date().toLocaleDateString()}|Time: ${new Date().toLocaleTimeString()}||Amount: ${amount}|Tip: ${tip}|Total: ${totalAmount}||Card: ************1234|Auth: ${Math.floor(Math.random() * 900000 + 100000)}||APPROVED - THANK YOU|` : undefined;
+    const receiptContent = verbatimReceipt ? `MERCHANT NAME|123 Main St|City, State|Tel: 555-1234||${responseTransactionType.toUpperCase()} TRANSACTION|Date: ${new Date().toLocaleDateString()}|Time: ${new Date().toLocaleTimeString()}||Amount: ${amount}|Tip: ${gratuity}|Total: ${totalAmount}||Card: ************1234|Auth: ${Math.floor(Math.random() * 900000 + 100000)}||APPROVED - THANK YOU|` : undefined;
     
     const jsonData = {
         "OCserviceResponse": {
@@ -1464,8 +1470,7 @@ window.generateResponseJSON = function() {
                     "saleContext": {
                         "saleIdentification": "",
                         "saleReferenceNumber": "",
-                        "cashierIdentification": "",
-                        "invoiceNumber": ""
+                        "SaleReconciliationIdentification": ""
                     }
                 },
                 "serviceContent": "FSPP",
@@ -1480,10 +1485,9 @@ window.generateResponseJSON = function() {
                         "authorisationCode": String(Math.floor(Math.random() * 900000 + 100000)),
                         "transactionDetails": {
                             "totalAmount": totalAmount,
-                            "tipAmount": tip,
+                            "MOTOIndicator": false,
                             "detailedAmount": {
-                                "amountGoodsAndServices": amount,
-                                "gratuity": tip
+                                "amountGoodsAndServices": amount
                             }
                         },
                         "paymentInstrumentData": {
@@ -1499,6 +1503,11 @@ window.generateResponseJSON = function() {
             }
         }
     };
+    
+    // Only add gratuity if gratuity > 0 (following structure)
+    if (parseFloat(gratuity) > 0) {
+        jsonData.OCserviceResponse.serviceResponse.paymentResponse.paymentTransaction.transactionDetails.detailedAmount.gratuity = gratuity;
+    }
     
     if (tokenResponse) {
         jsonData.OCserviceResponse.serviceResponse.paymentResponse.paymentTransaction.paymentInstrumentData.cardData.paymentToken = "TKN" + generateUUID().replace(/-/g, '').substring(0, 32);
