@@ -465,49 +465,121 @@ function validateJSON(jsonData, rootElementName) {
     const structure = specStructure[rootElementName];
     const data = jsonData[rootElementName];
     
-    if (!structure || !data) {
-        validationResults.errors.push('Invalid root element structure');
+    if (!structure) {
+        validationResults.errors.push(`Unknown root element structure: ${rootElementName}`);
         displayValidationResults(validationResults);
         return;
     }
     
+    if (!data) {
+        validationResults.errors.push(`Missing root element: ${rootElementName}`);
+        displayValidationResults(validationResults);
+        return;
+    }
+    
+    // Add info about what we're validating
+    validationResults.info.push(`Validating against specification: ${rootElementName}`);
+    
+    // Validate the entire structure recursively
     validateNode(data, structure, rootElementName, validationResults);
+    
+    // Add completion message
+    const totalFields = validationResults.errors.length + validationResults.warnings.length + validationResults.info.length;
+    if (validationResults.errors.length === 0 && validationResults.warnings.length === 0) {
+        validationResults.info.push(`Validation complete: All required fields present and valid`);
+    }
+    
+    // Display all results
     displayValidationResults(validationResults);
+    
+    // Scroll to results
+    document.getElementById('validationResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function validateNode(data, spec, path, results) {
     if (!spec || typeof spec !== 'object') return;
     
+    // Validate all fields in the spec, don't stop at first error
     Object.keys(spec).forEach(key => {
         const fieldSpec = spec[key];
         const fieldPath = `${path}.${key}`;
         const fieldValue = data[key];
         
         if (fieldSpec.type) {
+            // This is a leaf node with a type - validate it
             validateField(fieldValue, fieldSpec, fieldPath, results);
         } else {
+            // This is a nested object - check if it exists and recurse
             if (fieldValue !== undefined && fieldValue !== null) {
-                validateNode(fieldValue, fieldSpec, fieldPath, results);
+                // Value exists, validate its nested structure
+                if (Array.isArray(fieldValue)) {
+                    // Handle arrays
+                    fieldValue.forEach((item, index) => {
+                        validateNode(item, fieldSpec, `${fieldPath}[${index}]`, results);
+                    });
+                } else if (typeof fieldValue === 'object') {
+                    // Validate nested object
+                    validateNode(fieldValue, fieldSpec, fieldPath, results);
+                } else {
+                    results.errors.push(`${fieldPath}: Expected object but got ${typeof fieldValue}`);
+                }
             } else {
-                if (fieldSpec.cardinality && isRequired(fieldSpec.cardinality)) {
-                    results.errors.push(`Missing required field: ${fieldPath}`);
+                // Value is missing - check if it's required
+                // We need to check if ANY child in this spec has a required cardinality
+                const hasRequiredChildren = checkForRequiredChildren(fieldSpec);
+                if (hasRequiredChildren) {
+                    results.errors.push(`Missing required section: ${fieldPath}`);
                 }
             }
         }
     });
+    
+    // Also check for unexpected fields in data that aren't in spec
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+        Object.keys(data).forEach(key => {
+            if (!spec.hasOwnProperty(key)) {
+                results.warnings.push(`${path}.${key}: Unexpected field not in specification`);
+            }
+        });
+    }
+}
+
+// Helper function to check if a spec section has any required children
+function checkForRequiredChildren(spec) {
+    if (!spec || typeof spec !== 'object') return false;
+    
+    for (const key in spec) {
+        const field = spec[key];
+        if (field.cardinality && isRequired(field.cardinality)) {
+            return true;
+        }
+        if (typeof field === 'object' && !field.type) {
+            if (checkForRequiredChildren(field)) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 function validateField(value, spec, path, results) {
     const cardinality = spec.cardinality;
     const typeName = spec.type;
     
+    // Check if required - but don't return, continue collecting errors
     if (isRequired(cardinality)) {
         if (value === undefined || value === null || value === '') {
             results.errors.push(`Missing required field: ${path} (${cardinality})`);
-            return;
+            // Don't return - we still want to report this field was expected
         }
     }
     
+    // If value is empty and optional, skip further validation
+    if (!isRequired(cardinality) && (value === undefined || value === null || value === '')) {
+        return;
+    }
+    
+    // If required but missing, we already reported it above, skip type validation
     if (value === undefined || value === null || value === '') {
         return;
     }
@@ -515,6 +587,7 @@ function validateField(value, spec, path, results) {
     const typeDefinition = dataTypes[typeName];
     
     if (typeDefinition) {
+        // Validate all rules, don't stop at first error
         if (typeDefinition.length) {
             validateLength(value, typeDefinition.length, path, results);
         }
@@ -575,61 +648,90 @@ function validateCodeSet(value, codeSetName, path, results) {
 function validateBaseType(value, baseTypeName, path, results) {
     const strValue = String(value);
     
+    // Validate all applicable type rules, don't stop at first error
     switch(baseTypeName) {
         case 'UUID':
             const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
             if (!uuidPattern.test(strValue)) {
-                results.errors.push(`${path}: Invalid UUID format`);
+                results.errors.push(`${path}: Invalid UUID format. Expected: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (got: "${value}")`);
             }
             break;
             
         case 'ISODateTime':
             const isoDateTimePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/;
             if (!isoDateTimePattern.test(strValue)) {
-                results.errors.push(`${path}: Invalid ISO DateTime format (expected: YYYY-MM-DDThh:mm:ss.sssZ)`);
+                results.errors.push(`${path}: Invalid ISO DateTime format. Expected: YYYY-MM-DDThh:mm:ss.sssZ (got: "${value}")`);
+            } else {
+                // Additional validation: check if it's a valid date
+                const dateObj = new Date(strValue);
+                if (isNaN(dateObj.getTime())) {
+                    results.errors.push(`${path}: Invalid date/time value (got: "${value}")`);
+                }
             }
             break;
             
         case 'ISODate':
             const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
             if (!isoDatePattern.test(strValue)) {
-                results.errors.push(`${path}: Invalid ISO Date format (expected: YYYY-MM-DD)`);
+                results.errors.push(`${path}: Invalid ISO Date format. Expected: YYYY-MM-DD (got: "${value}")`);
+            } else {
+                // Validate the date is real
+                const [year, month, day] = strValue.split('-').map(Number);
+                const dateObj = new Date(year, month - 1, day);
+                if (dateObj.getFullYear() !== year || dateObj.getMonth() !== month - 1 || dateObj.getDate() !== day) {
+                    results.errors.push(`${path}: Invalid date value (got: "${value}")`);
+                }
             }
             break;
             
         case 'ISOTime':
             const isoTimePattern = /^\d{2}:\d{2}:\d{2}$/;
             if (!isoTimePattern.test(strValue)) {
-                results.errors.push(`${path}: Invalid ISO Time format (expected: hh:mm:ss)`);
+                results.errors.push(`${path}: Invalid ISO Time format. Expected: hh:mm:ss (got: "${value}")`);
+            } else {
+                // Validate time values are in range
+                const [hours, minutes, seconds] = strValue.split(':').map(Number);
+                if (hours > 23 || minutes > 59 || seconds > 59) {
+                    results.errors.push(`${path}: Invalid time value (hours: 0-23, minutes: 0-59, seconds: 0-59) (got: "${value}")`);
+                }
             }
             break;
             
         case 'Boolean':
             if (value !== true && value !== false) {
-                results.warnings.push(`${path}: Expected boolean value (true/false)`);
+                results.errors.push(`${path}: Must be a boolean value (true/false) (got: ${typeof value} "${value}")`);
             }
             break;
             
         case 'Number':
         case 'Decimal':
             if (isNaN(value)) {
-                results.errors.push(`${path}: Must be a valid number`);
+                results.errors.push(`${path}: Must be a valid number (got: "${value}")`);
             }
             break;
             
         case 'DigitString':
-            if (!/^\d*$/.test(strValue)) {
-                results.errors.push(`${path}: Must contain only digits (0-9)`);
+            if (!/^\d+$/.test(strValue)) {
+                results.errors.push(`${path}: Must contain only digits 0-9 (got: "${value}")`);
             }
             break;
             
         case 'Amount':
             const amount = parseFloat(value);
-            if (isNaN(amount) || amount < 0) {
-                results.errors.push(`${path}: Must be a valid positive amount`);
+            if (isNaN(amount)) {
+                results.errors.push(`${path}: Must be a valid numeric amount (got: "${value}")`);
+            } else if (amount < 0) {
+                results.errors.push(`${path}: Amount must be positive or zero (got: ${value})`);
             }
+            // Check decimal places as a warning
             if (!/^\d+\.\d{2}$/.test(strValue)) {
-                results.warnings.push(`${path}: Amount should have exactly 2 decimal places`);
+                results.warnings.push(`${path}: Amount should have exactly 2 decimal places (got: "${value}")`);
+            }
+            break;
+            
+        case 'TextString':
+            if (typeof value !== 'string') {
+                results.errors.push(`${path}: Must be a string (got: ${typeof value} "${value}")`);
             }
             break;
     }
@@ -641,37 +743,59 @@ function displayValidationResults(results) {
     let html = '<div style="padding: 20px;">';
     
     const totalIssues = results.errors.length + results.warnings.length;
+    
+    // Summary at the top
     if (totalIssues === 0) {
         html += `<div class="validation-status validation-success" style="margin-bottom: 20px;">
             <strong>✓ Validation Passed</strong><br>
-            No errors or warnings found. The request is valid.
+            No errors or warnings found. The payload is valid.
         </div>`;
     } else {
-        html += `<div class="validation-summary" style="margin-bottom: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px;">
+        const errorLabel = results.errors.length === 1 ? 'Error' : 'Errors';
+        const warningLabel = results.warnings.length === 1 ? 'Warning' : 'Warnings';
+        
+        html += `<div class="validation-summary" style="margin-bottom: 20px; padding: 15px; background: ${results.errors.length > 0 ? '#f8d7da' : '#fff3cd'}; border: 1px solid ${results.errors.length > 0 ? '#dc3545' : '#ffc107'}; border-radius: 6px;">
             <strong>Validation Summary:</strong><br>
-            ${results.errors.length} Error(s), ${results.warnings.length} Warning(s)
+            <div style="font-size: 1.2em; margin-top: 8px;">
+                ${results.errors.length > 0 ? `<span style="color: #dc3545;">❌ ${results.errors.length} ${errorLabel}</span>` : ''}
+                ${results.errors.length > 0 && results.warnings.length > 0 ? ' | ' : ''}
+                ${results.warnings.length > 0 ? `<span style="color: #ffc107;">⚠️ ${results.warnings.length} ${warningLabel}</span>` : ''}
+            </div>
+            ${results.errors.length > 0 ? '<div style="margin-top: 8px; color: #721c24;">Please fix all errors before using this payload.</div>' : ''}
         </div>`;
     }
     
+    // Errors section
     if (results.errors.length > 0) {
         html += '<div class="validation-section"><h3 style="color: #dc3545; margin-bottom: 10px;">❌ Errors</h3>';
         html += '<ul style="list-style: none; padding: 0;">';
-        results.errors.forEach(error => {
-            html += `<li style="padding: 8px; margin-bottom: 5px; background: #f8d7da; border-left: 4px solid #dc3545; border-radius: 4px;">${error}</li>`;
+        
+        // Sort errors by path for better organization
+        const sortedErrors = [...results.errors].sort();
+        sortedErrors.forEach((error, index) => {
+            html += `<li style="padding: 8px; margin-bottom: 5px; background: #f8d7da; border-left: 4px solid #dc3545; border-radius: 4px;">
+                <strong>#${index + 1}:</strong> ${error}
+            </li>`;
         });
         html += '</ul></div>';
     }
     
+    // Warnings section
     if (results.warnings.length > 0) {
         html += '<div class="validation-section" style="margin-top: 20px;"><h3 style="color: #ffc107; margin-bottom: 10px;">⚠️ Warnings</h3>';
         html += '<ul style="list-style: none; padding: 0;">';
-        results.warnings.forEach(warning => {
-            html += `<li style="padding: 8px; margin-bottom: 5px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">${warning}</li>`;
+        
+        const sortedWarnings = [...results.warnings].sort();
+        sortedWarnings.forEach((warning, index) => {
+            html += `<li style="padding: 8px; margin-bottom: 5px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                <strong>#${index + 1}:</strong> ${warning}
+            </li>`;
         });
         html += '</ul></div>';
     }
     
-    if (results.info.length > 0 && results.errors.length === 0) {
+    // Info (Valid codes, etc.) - only show if no errors
+    if (results.info.length > 0 && results.errors.length === 0 && results.warnings.length === 0) {
         html += '<div class="validation-section" style="margin-top: 20px;"><h3 style="color: #28a745; margin-bottom: 10px;">ℹ️ Validation Details</h3>';
         html += '<ul style="list-style: none; padding: 0;">';
         results.info.slice(0, 10).forEach(info => {
@@ -681,6 +805,16 @@ function displayValidationResults(results) {
             html += `<li style="padding: 6px; font-style: italic; color: #666;">...and ${results.info.length - 10} more valid fields</li>`;
         }
         html += '</ul></div>';
+    }
+    
+    // Statistics footer
+    if (totalIssues > 0) {
+        html += `<div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #6c757d;">
+            <strong>Total issues found:</strong> ${totalIssues}
+            <div style="margin-top: 8px; font-size: 0.9em; color: #666;">
+                All validation rules have been checked. ${results.errors.length > 0 ? 'Fix the errors above to ensure payload compliance.' : 'Address warnings to improve payload quality.'}
+            </div>
+        </div>`;
     }
     
     html += '</div>';
@@ -1022,31 +1156,73 @@ window.validatePayload = function() {
     try {
         jsonData = JSON.parse(input);
         
+        // Determine root element and validate structure
         if (jsonData.OCserviceRequest) {
             rootElementName = 'OCserviceRequest';
+            // Check if it's a reversal request (Void)
             if (jsonData.OCserviceRequest.serviceRequest && jsonData.OCserviceRequest.serviceRequest.reversalRequest) {
                 rootElementName = 'OCserviceRequestReversal';
+            }
+            // Check if it's a batch request (Settle)
+            if (jsonData.OCserviceRequest.serviceRequest && jsonData.OCserviceRequest.serviceRequest.batchRequest) {
+                rootElementName = 'OCserviceRequestBatch';
             }
         } else if (jsonData.OCreportRequest) {
             rootElementName = 'OCreportRequest';
         } else if (jsonData.OCsessionManagementRequest) {
             rootElementName = 'OCsessionManagementRequest';
+        } else if (jsonData.OCserviceResponse) {
+            rootElementName = 'OCserviceResponse';
         } else {
+            // Try to identify what was provided
+            const providedRoots = Object.keys(jsonData).join(', ');
             displayValidationResults({
-                errors: ['Invalid root element. Expected "OCserviceRequest", "OCreportRequest", or "OCsessionManagementRequest".'],
+                errors: [
+                    `Invalid root element. Expected one of: "OCserviceRequest", "OCreportRequest", "OCsessionManagementRequest", or "OCserviceResponse".`,
+                    providedRoots ? `Found root element(s): ${providedRoots}` : 'No recognized root element found.'
+                ],
                 warnings: [],
-                info: []
+                info: ['Valid root elements are: OCserviceRequest, OCreportRequest, OCsessionManagementRequest, OCserviceResponse']
             });
             return;
         }
         
+        // Run comprehensive validation
         validateJSON(jsonData, rootElementName);
         
     } catch (e) {
+        // Provide detailed JSON parse error information
+        const errorLines = input.split('\n');
+        let errorContext = '';
+        
+        // Try to extract line number from error message
+        const lineMatch = e.message.match(/position (\d+)/i);
+        if (lineMatch) {
+            const position = parseInt(lineMatch[1]);
+            let currentPos = 0;
+            for (let i = 0; i < errorLines.length; i++) {
+                currentPos += errorLines[i].length + 1; // +1 for newline
+                if (currentPos >= position) {
+                    errorContext = `Near line ${i + 1}: "${errorLines[i].substring(0, 50)}${errorLines[i].length > 50 ? '...' : ''}"`;
+                    break;
+                }
+            }
+        }
+        
         displayValidationResults({
-            errors: [`JSON Parse Error: ${e.message}`],
+            errors: [
+                `JSON Parse Error: ${e.message}`,
+                errorContext || 'Check your JSON syntax (missing commas, brackets, quotes, etc.)'
+            ],
             warnings: [],
-            info: []
+            info: [
+                'Common JSON errors:',
+                '• Missing or extra commas',
+                '• Unmatched brackets or braces',
+                '• Missing quotes around strings',
+                '• Trailing commas (not allowed in JSON)',
+                '• Single quotes instead of double quotes'
+            ]
         });
     }
 };
