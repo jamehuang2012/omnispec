@@ -499,6 +499,22 @@ function validateJSON(jsonData, rootElementName) {
 function validateNode(data, spec, path, results) {
     if (!spec || typeof spec !== 'object') return;
     
+    // List of optional sections that should not trigger "missing required section" errors
+    const optionalSections = [
+        'VehicleRentalData',
+        'LodgingData',
+        'TravelData',
+        'DCCRefund',
+        'CruiseData',
+        'DetailedCharge',
+        'RoomDetail',
+        'TripSegment',
+        'PickupLocation',
+        'ReturnLocation',
+        'Property',
+        'TravelAgency'
+    ];
+    
     // Validate all fields in the spec, don't stop at first error
     Object.keys(spec).forEach(key => {
         const fieldSpec = spec[key];
@@ -525,6 +541,11 @@ function validateNode(data, spec, path, results) {
                 }
             } else {
                 // Value is missing - check if it's required
+                // Skip optional industry data sections and other optional containers
+                if (optionalSections.includes(key)) {
+                    return; // Skip validation for optional sections
+                }
+                
                 // We need to check if ANY child in this spec has a required cardinality
                 const hasRequiredChildren = checkForRequiredChildren(fieldSpec);
                 if (hasRequiredChildren) {
