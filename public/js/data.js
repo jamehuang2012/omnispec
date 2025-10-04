@@ -914,5 +914,52 @@ export const specStructure = {
                 }
             }
         }
+    },
+    OCserviceResponseBatch: {
+        header: {
+            messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
+            protocolVersion: { type: 'ST-ProtocolVersion', cardinality: '[1..1]' },
+            exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]' },
+            creationDateTime: { type: 'ISODateTime', cardinality: '[1..1]' },
+            initiatingParty: {
+                identification: { type: 'ST-Identification', cardinality: '[1..1]' },
+                type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' },
+                authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[1..1]' }
+            },
+            recipientParty: {
+                identification: { type: 'ST-Identification', cardinality: '[1..1]' },
+                type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' }
+            }
+        },
+        serviceResponse: {
+            response: {
+                responseCode: { type: 'ST-Response', cardinality: '[1..1]' },
+                responseReason: { type: 'ST-ResponseReason', cardinality: '[0..1]' }
+            },
+            batchResponse: {
+                dataSource: {
+                    host: {
+                        cardBrand: { type: 'ST-CardBrand', cardinality: '[1..1]' },
+                        transType: { type: 'ST-TransactionType', cardinality: '[1..1]' },
+                        count: { type: 'DigitString', cardinality: '[1..1]' },
+                        amount: { type: 'ST-Amount', cardinality: '[1..1]' }
+                    },
+                    terminal: {
+                        cardBrand: { type: 'ST-CardBrand', cardinality: '[1..1]' },
+                        transType: { type: 'ST-TransactionType', cardinality: '[1..1]' },
+                        count: { type: 'DigitString', cardinality: '[1..1]' },
+                        amount: { type: 'ST-Amount', cardinality: '[1..1]' }
+                    }
+                },
+                Receipt: {
+                    documentQualifier: { type: 'ST-DocumentQualifier', cardinality: '[1..1]' },
+                    integratedPrintFlag: { type: 'Indicator', cardinality: '[0..1]' },
+                    requiredSignatureFlag: { type: 'Indicator', cardinality: '[0..1]' },
+                    outputContent: { type: 'ST-OutputContent', cardinality: '[1..1]' }
+                }
+            }
+        }
     }
 };

@@ -1374,14 +1374,16 @@ function renderResponseSpecTree() {
     const container = document.getElementById('responseSpecTree');
     container.innerHTML = '';
     
-    // Check if Void is selected
+    // Check transaction type to determine which structure to show
     const responseTransactionTypeElement = document.getElementById('responseTransactionType');
     const responseTransactionType = responseTransactionTypeElement ? responseTransactionTypeElement.value : 'Sale';
     
-    // Use OCserviceResponseReversal structure for Void, otherwise use OCserviceResponse
+    // Determine structure based on transaction type
     let structureToShow = 'OCserviceResponse';
     if (responseTransactionType === 'Void') {
         structureToShow = 'OCserviceResponseReversal';
+    } else if (responseTransactionType === 'Settle') {
+        structureToShow = 'OCserviceResponseBatch';
     }
     
     function createNode(name, data, level = 0) {
@@ -1432,7 +1434,7 @@ function renderResponseSpecTree() {
     }
     
     if (specStructure[structureToShow]) {
-        // Always display as "OCserviceResponse" even when using OCserviceResponseReversal structure
+        // Always display as "OCserviceResponse" even when using different structures
         createNode('OCserviceResponse', specStructure[structureToShow]);
     }
 }
@@ -1480,7 +1482,8 @@ window.generateResponseJSON = function() {
         'PreAuth': { transactionType: 'RESV', messageFunction: 'FAUP' },
         'PreAuthCompletion': { transactionType: 'RESV', messageFunction: 'CMPK' },
         'TipAdjustment': { transactionType: 'CRDP', messageFunction: 'TADK' },
-        'Void': { transactionType: 'CRDP', messageFunction: 'FMPK' }
+        'Void': { transactionType: 'CRDP', messageFunction: 'FMPK' },
+        'Settle': { messageFunction: 'RCLP' }
     };
     
     const config = responseTransactionConfig[responseTransactionType] || responseTransactionConfig['Sale'];
@@ -1498,7 +1501,8 @@ window.generateResponseJSON = function() {
                 "initiatingParty": {
                     "identification": "11000499",
                     "type": "TID",
-                    "shortName": "Terminal  ID"
+                    "shortName": "Terminal  ID",
+                    "authenticationKey": generateUUID().toUpperCase()
                 },
                 "recipientParty": {
                     "identification": "20000004",
@@ -1507,32 +1511,78 @@ window.generateResponseJSON = function() {
                 }
             },
             "serviceResponse": {
-                "environment": {
-                    "merchant": {
-                        "identification": "7800199838"
-                    },
-                    "POI": {
-                        "identification": "11000499"
-                    }
-                },
-                "context": {
-                    "saleContext": {
-                        "saleIdentification": "",
-                        "saleReferenceNumber": "",
-                        "SaleReconciliationIdentification": ""
-                    }
-                },
-                "serviceContent": "FSPP",
                 "response": {
-                    "result": "APPR",
+                    "responseCode": "APPR",
                     "responseReason": ""
                 }
             }
         }
     };
     
-    // Handle VOID transaction - use reversalResponse instead of paymentResponse
-    if (responseTransactionType === 'Void') {
+    // Handle SETTLE transaction - use batchResponse
+    if (responseTransactionType === 'Settle') {
+        jsonData.OCserviceResponse.serviceResponse.batchResponse = {
+            "dataSource": {
+                "host": [
+                    {
+                        "cardBrand": "VISA",
+                        "transType": "CRDP",
+                        "count": String(Math.floor(Math.random() * 50 + 10)),
+                        "amount": (Math.random() * 5000 + 1000).toFixed(2)
+                    },
+                    {
+                        "cardBrand": "MASTERCARD",
+                        "transType": "CRDP",
+                        "count": String(Math.floor(Math.random() * 40 + 5)),
+                        "amount": (Math.random() * 4000 + 800).toFixed(2)
+                    },
+                    {
+                        "cardBrand": "VISA",
+                        "transType": "RFND",
+                        "count": String(Math.floor(Math.random() * 5 + 1)),
+                        "amount": (Math.random() * 500 + 100).toFixed(2)
+                    }
+                ],
+                "terminal": [
+                    {
+                        "cardBrand": "VISA",
+                        "transType": "CRDP",
+                        "count": String(Math.floor(Math.random() * 55 + 12)),
+                        "amount": (Math.random() * 5500 + 1200).toFixed(2)
+                    },
+                    {
+                        "cardBrand": "MASTERCARD",
+                        "transType": "CRDP",
+                        "count": String(Math.floor(Math.random() * 45 + 8)),
+                        "amount": (Math.random() * 4500 + 900).toFixed(2)
+                    },
+                    {
+                        "cardBrand": "AMEX",
+                        "transType": "CRDP",
+                        "count": String(Math.floor(Math.random() * 10 + 2)),
+                        "amount": (Math.random() * 1500 + 300).toFixed(2)
+                    },
+                    {
+                        "cardBrand": "VISA",
+                        "transType": "RFND",
+                        "count": String(Math.floor(Math.random() * 6 + 1)),
+                        "amount": (Math.random() * 600 + 150).toFixed(2)
+                    }
+                ]
+            }
+        };
+        
+        if (verbatimReceipt && receiptContent) {
+            jsonData.OCserviceResponse.serviceResponse.batchResponse.Receipt = {
+                "documentQualifier": "CRCP",
+                "integratedPrintFlag": 0,
+                "requiredSignatureFlag": 0,
+                "outputContent": receiptContent
+            };
+        }
+    }
+    // Handle VOID transaction - use reversalResponse
+    else if (responseTransactionType === 'Void') {
         const transactionDateTime = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(); // Yesterday for example
         const authCode = String(Math.floor(Math.random() * 900000 + 100000));
         
@@ -1577,14 +1627,14 @@ window.generateResponseJSON = function() {
         
         if (verbatimReceipt && receiptContent) {
             jsonData.OCserviceResponse.serviceResponse.reversalResponse.Receipt = {
-                "documentQualifier": "CUST",
+                "documentQualifier": "CRCP",
                 "integratedPrintFlag": 0,
                 "requiredSignatureFlag": 0,
                 "outputContent": receiptContent
             };
         }
     } else {
-        // Standard payment response for non-VOID transactions
+        // Standard payment response for non-VOID and non-SETTLE transactions
         jsonData.OCserviceResponse.serviceResponse.paymentResponse = {
             "paymentTransaction": {
                 "transactionType": config.transactionType,
