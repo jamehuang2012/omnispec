@@ -1379,7 +1379,6 @@ function renderResponseSpecTree() {
     const responseTransactionType = responseTransactionTypeElement ? responseTransactionTypeElement.value : 'Sale';
     
     // Determine structure based on transaction type
-   // Determine structure based on transaction type
     let structureToShow = 'OCserviceResponse';
     let displayName = 'OCserviceResponse';
     
@@ -1486,8 +1485,10 @@ window.generateResponseJSON = function() {
     const now = new Date().toISOString();
     const totalAmount = (parseFloat(amount) + parseFloat(gratuity)).toFixed(2);
     
+    const receiptContent = verbatimReceipt ? `MERCHANT NAME|123 Main St|City, State|Tel: 555-1234||${responseTransactionType.toUpperCase()} TRANSACTION|Date: ${new Date().toLocaleDateString()}|Time: ${new Date().toLocaleTimeString()}||Amount: ${amount}|Tip: ${gratuity}|Total: ${totalAmount}||Card: ************1234|Auth: ${Math.floor(Math.random() * 900000 + 100000)}||APPROVED - THANK YOU|` : undefined;
+    
     // Map response transaction types to codes
-   const responseTransactionConfig = {
+    const responseTransactionConfig = {
         'Sale': { transactionType: 'CRDP', messageFunction: 'AUTP' },
         'MOTO': { transactionType: 'CRDP', messageFunction: 'AUTP' },
         'Crypto': { transactionType: 'CRDP', messageFunction: 'CRPP' },
@@ -1503,30 +1504,49 @@ window.generateResponseJSON = function() {
     
     const config = responseTransactionConfig[responseTransactionType] || responseTransactionConfig['Sale'];
     
-    const receiptContent = verbatimReceipt ? `MERCHANT NAME|123 Main St|City, State|Tel: 555-1234||${responseTransactionType.toUpperCase()} TRANSACTION|Date: ${new Date().toLocaleDateString()}|Time: ${new Date().toLocaleTimeString()}||Amount: ${amount}|Tip: ${gratuity}|Total: ${totalAmount}||Card: ************1234|Auth: ${Math.floor(Math.random() * 900000 + 100000)}||APPROVED - THANK YOU|` : undefined;
+    // Generate base response structure with correct root element
+    let jsonData;
     
-    // Generate base response structure
-    const jsonData = {
-        "OCserviceResponse": {
-            "header": {
-                "messageFunction": config.messageFunction,
-                "protocolVersion": "2.0",
-                "exchangeIdentification": generateUUID(),
-                "creationDateTime": now,
-                "initiatingParty": {
-                    "identification": "11000499",
-                    "type": "TID",
-                    "shortName": "Terminal  ID",
-                    "authenticationKey": generateUUID().toUpperCase()
-                },
-                "recipientParty": {
-                    "identification": "20000004",
-                    "type": "PID",
-                    "shortName": "Cash Register ID"
+    if (responseTransactionType === 'SessionManagement') {
+        jsonData = {
+            "OCsessionManagementResponse": {
+                "header": {
+                    "messageFunction": config.messageFunction,
+                    "protocolVersion": "2.0",
+                    "exchangeIdentification": generateUUID(),
+                    "creationDateTime": now,
+                    "initiatingParty": {
+                        "identification": "11000499",
+                        "type": "TID",
+                        "shortName": "Terminal  ID",
+                        "authenticationKey": generateUUID().toUpperCase()
+                    }
                 }
             }
-        }
-    };
+        };
+    } else {
+        jsonData = {
+            "OCserviceResponse": {
+                "header": {
+                    "messageFunction": config.messageFunction,
+                    "protocolVersion": "2.0",
+                    "exchangeIdentification": generateUUID(),
+                    "creationDateTime": now,
+                    "initiatingParty": {
+                        "identification": "11000499",
+                        "type": "TID",
+                        "shortName": "Terminal  ID",
+                        "authenticationKey": generateUUID().toUpperCase()
+                    },
+                    "recipientParty": {
+                        "identification": "20000004",
+                        "type": "PID",
+                        "shortName": "Cash Register ID"
+                    }
+                }
+            }
+        };
+    }
     
     // Handle REPORT transaction
     if (responseTransactionType === 'Report') {
@@ -1762,42 +1782,22 @@ window.generateResponseJSON = function() {
                 "outputContent": receiptContent
             };
         }
-    } else if (responseTransactionType === 'SessionManagement') {
-             const jsonData = {
-                "OCsessionManagementResponse": {
-                    "header": {
-                        "messageFunction": "SASP",
-                        "protocolVersion": "2.0",
-                        "exchangeIdentification": generateUUID(),
-                        "creationDateTime": now,
-                        "initiatingParty": {
-                            "identification": "11000499",
-                            "type": "TID",
-                            "shortName": "Terminal  ID",
-                            "authenticationKey": generateUUID().toUpperCase()
-                        }
-                    },
-                    "sessionManagementResponse": {
-                        "POIComponent": {
-                            "POIIdentification": {
-                                "identification": "11000499",
-                                "serialNumber": "SN" + Math.floor(Math.random() * 1000000)
-                            },
-                            "POIGroupIdentification": {
-                                "exchangeAction": "INIT",
-                                "exchangeType": "NORM"
-                            }
-                        },
-                        "transactionInProcess": {
-                            "transactionStatus": "ACPT",
-                            "exchangeIdentification": "39072dfe-4b5e-4987-acf0-f683a06a9c67"
-                        },
-                        "sessionResponse": {
-                            "response": "APPR",
-                            "responseReason": ""
-                        }
-                    }
+    } else if  (responseTransactionType === 'SessionManagement') {
+        jsonData.OCsessionManagementResponse.sessionManagementResponse = {
+            "response": {
+                "responseCode": "APPR",
+                "responseReason": ""
+            },
+            "POIComponent": {
+                "POIIdentification": {
+                    "identification": "11000499",
+                    "serialNumber": "SN" + Math.floor(Math.random() * 1000000)
+                },
+                "POIGroupIdentification": {
+                    "exchangeAction": "INIT",
+                    "exchangeType": "NORM"
                 }
+            }
         };
     } else {
         // Standard payment response for non-VOID, non-SETTLE, non-REPORT transactions
