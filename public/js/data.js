@@ -64,7 +64,7 @@ export const basicDataTypes = {
     }
 };
 
-// Data Types Definitions (same as before - no changes needed here)
+// Data Types Definitions
 export const dataTypes = {
     'ST-SaleReconciliationIdentification': { type: 'TextString', length: '[1,8]', baseType: 'TextString' },
     'ST-SerialNumber': { type: 'TextString', length: '[1,15]', baseType: 'TextString' },
@@ -152,7 +152,7 @@ export const dataTypes = {
     'ST-POIReconciliationID': { type: 'TextString', length: '[1,10]', desc: 'POI Reconciliation Identifier', baseType: 'TextString' }
 };
 
-// Code Sets Definitions (keeping all the code sets from the original file - unchanged)
+// Code Sets Definitions
 export const codeSets = {
     'CS-MessageFunction': [
         { code: 'AUTQ', name: 'SaleRequest', desc: 'Request for Sale without financial capture' },
@@ -363,10 +363,15 @@ export const codeSets = {
     ],
     'CS-PaymentInstrumentType': [
         { code: 'CARD', name: 'Card', desc: 'Payment card' }
+    ],
+    'CS-DocumentQualifier': [
+        { code: 'CRCP', name: 'CustomerReceipt', desc: 'When the Sale System requires the terminal system to print the Customer receipt.' },
+        { code: 'HRCP', name: 'CashierReceipt', desc: 'When the Sale system print the Cashier copy of the Payment receipt.' },
+        { code: 'SRCP', name: 'SaleReceipt', desc: 'When the Sale System requires the terminal system to print the Sale receipt.' }
     ]
 };
 
-// Message Specification Structure - CORRECTED
+// Message Specification Structure
 export const specStructure = {
     OCserviceRequest: {
         header: {
