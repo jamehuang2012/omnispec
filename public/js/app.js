@@ -1374,7 +1374,15 @@ function renderResponseSpecTree() {
     const container = document.getElementById('responseSpecTree');
     container.innerHTML = '';
     
-    const structureToShow = 'OCserviceResponse';
+    // Check if Void is selected
+    const responseTransactionTypeElement = document.getElementById('responseTransactionType');
+    const responseTransactionType = responseTransactionTypeElement ? responseTransactionTypeElement.value : 'Sale';
+    
+    // Use OCserviceResponseReversal structure for Void, otherwise use OCserviceResponse
+    let structureToShow = 'OCserviceResponse';
+    if (responseTransactionType === 'Void') {
+        structureToShow = 'OCserviceResponseReversal';
+    }
     
     function createNode(name, data, level = 0) {
         const div = document.createElement('div');
@@ -1424,7 +1432,8 @@ function renderResponseSpecTree() {
     }
     
     if (specStructure[structureToShow]) {
-        createNode(structureToShow, specStructure[structureToShow]);
+        // Always display as "OCserviceResponse" even when using OCserviceResponseReversal structure
+        createNode('OCserviceResponse', specStructure[structureToShow]);
     }
 }
 
@@ -1440,6 +1449,9 @@ window.handleResponseTransactionTypeChange = function() {
     if (responseTransactionType === 'Report') {
         responseReportTypeGroup.style.display = 'block';
     }
+    
+    // Re-render the spec tree when transaction type changes
+    renderResponseSpecTree();
 };
 
 window.generateResponseJSON = function() {
