@@ -1437,7 +1437,8 @@ function renderResponseSpecTree() {
     
     if (specStructure[structureToShow]) {
         // Always display as "OCserviceResponse" even when using different structures
-        createNode('OCserviceResponse', specStructure[structureToShow]);
+        const displayName = (responseTransactionType === 'Report') ? 'OCreportResponse' : 'OCserviceResponse';
+        createNode(displayName, specStructure[structureToShow]);
     }
 }
 
