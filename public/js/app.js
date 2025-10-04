@@ -1384,6 +1384,8 @@ function renderResponseSpecTree() {
         structureToShow = 'OCserviceResponseReversal';
     } else if (responseTransactionType === 'Settle') {
         structureToShow = 'OCserviceResponseBatch';
+    } else if (responseTransactionType === 'Report') {
+        structureToShow = 'OCreportResponse';
     }
     
     function createNode(name, data, level = 0) {
@@ -1483,7 +1485,8 @@ window.generateResponseJSON = function() {
         'PreAuthCompletion': { transactionType: 'RESV', messageFunction: 'CMPK' },
         'TipAdjustment': { transactionType: 'CRDP', messageFunction: 'TADK' },
         'Void': { transactionType: 'CRDP', messageFunction: 'FMPK' },
-        'Settle': { messageFunction: 'RCLP' }
+        'Settle': { messageFunction: 'RCLP' },
+        'Report': { messageFunction: 'RPTP' }
     };
     
     const config = responseTransactionConfig[responseTransactionType] || responseTransactionConfig['Sale'];
@@ -1509,66 +1512,174 @@ window.generateResponseJSON = function() {
                     "type": "PID",
                     "shortName": "Cash Register ID"
                 }
-            },
-            "serviceResponse": {
-                "response": {
-                    "responseCode": "APPR",
-                    "responseReason": ""
-                }
             }
         }
     };
     
-    // Handle SETTLE transaction - use batchResponse
-    if (responseTransactionType === 'Settle') {
-        jsonData.OCserviceResponse.serviceResponse.batchResponse = {
-            "dataSource": {
-                "host": [
+    // Handle REPORT transaction
+    if (responseTransactionType === 'Report') {
+        jsonData.OCserviceResponse.reportResponse = {
+            "response": {
+                "responseCode": "APPR",
+                "responseReason": ""
+            },
+            "reportTransactionResponse": {
+                "transactionReport": [
                     {
-                        "cardBrand": "VISA",
-                        "transType": "CRDP",
-                        "count": String(Math.floor(Math.random() * 50 + 10)),
-                        "amount": (Math.random() * 5000 + 1000).toFixed(2)
-                    },
-                    {
-                        "cardBrand": "MASTERCARD",
-                        "transType": "CRDP",
-                        "count": String(Math.floor(Math.random() * 40 + 5)),
-                        "amount": (Math.random() * 4000 + 800).toFixed(2)
-                    },
-                    {
-                        "cardBrand": "VISA",
-                        "transType": "RFND",
-                        "count": String(Math.floor(Math.random() * 5 + 1)),
-                        "amount": (Math.random() * 500 + 100).toFixed(2)
-                    }
-                ],
-                "terminal": [
-                    {
-                        "cardBrand": "VISA",
-                        "transType": "CRDP",
-                        "count": String(Math.floor(Math.random() * 55 + 12)),
-                        "amount": (Math.random() * 5500 + 1200).toFixed(2)
-                    },
-                    {
-                        "cardBrand": "MASTERCARD",
-                        "transType": "CRDP",
-                        "count": String(Math.floor(Math.random() * 45 + 8)),
-                        "amount": (Math.random() * 4500 + 900).toFixed(2)
-                    },
-                    {
-                        "cardBrand": "AMEX",
-                        "transType": "CRDP",
-                        "count": String(Math.floor(Math.random() * 10 + 2)),
-                        "amount": (Math.random() * 1500 + 300).toFixed(2)
-                    },
-                    {
-                        "cardBrand": "VISA",
-                        "transType": "RFND",
-                        "count": String(Math.floor(Math.random() * 6 + 1)),
-                        "amount": (Math.random() * 600 + 150).toFixed(2)
+                        "response": "APPR",
+                        "paymentResponse": {
+                            "receiptDetails": {
+                                "cardAID": "A0000000031010",
+                                "refId": "R" + Math.floor(Math.random() * 1000000),
+                                "balanceDue": "0.00",
+                                "cardDataNtryMd": "05",
+                                "cardLbl": "VISA CREDIT",
+                                "accountType": "CREDIT",
+                                "emvTagCryptogram": "1234567890ABCDEF",
+                                "emvTagTsi": "E800",
+                                "emvTagTvr": "0000008000",
+                                "mskPan": "************1234",
+                                "invoiceNumber": "INV" + Math.floor(Math.random() * 100000),
+                                "hostSequence": String(Math.floor(Math.random() * 10000)),
+                                "hostInvoice": String(Math.floor(Math.random() * 1000000)),
+                                "recordNumber": String(Math.floor(Math.random() * 100000)),
+                                "apprdeclISO": "000"
+                            }
+                        },
+                        "paymentInstrumentType": "CARD",
+                        "SaleReconciliationIdentification": "BATCH" + Math.floor(Math.random() * 1000),
+                        "brand": "VISA",
+                        "Hour": String(new Date().getHours()),
+                        "POIIdentification": "11000499",
+                        "saleIdentification": "SALE" + Math.floor(Math.random() * 10000),
+                        "cashierIdentification": "CLK" + Math.floor(Math.random() * 100),
+                        "transactionDetailReport": [
+                            {
+                                "POIGroupIdentification": "11000499",
+                                "cardProductProfile": "VISA_CREDIT",
+                                "currency": "USD",
+                                "entryMode": "CHIP",
+                                "cardMasked": "************1234",
+                                "type": "CRDP",
+                                "cumulativeAmount": (Math.random() * 5000 + 1000).toFixed(2),
+                                "detailedAmount": {
+                                    "amountGoodsAndServices": (Math.random() * 4500 + 900).toFixed(2),
+                                    "gratuity": (Math.random() * 500 + 100).toFixed(2)
+                                }
+                            },
+                            {
+                                "POIGroupIdentification": "11000499",
+                                "cardProductProfile": "VISA_CREDIT",
+                                "currency": "USD",
+                                "entryMode": "CTLS",
+                                "cardMasked": "************5678",
+                                "type": "CRDP",
+                                "cumulativeAmount": (Math.random() * 3000 + 500).toFixed(2),
+                                "detailedAmount": {
+                                    "amountGoodsAndServices": (Math.random() * 2800 + 450).toFixed(2),
+                                    "cashBack": (Math.random() * 200 + 50).toFixed(2)
+                                }
+                            }
+                        ],
+                        "transactionTotal": [
+                            {
+                                "POIGroupIdentification": "11000499",
+                                "cardProductProfile": "VISA_CREDIT",
+                                "currency": "USD",
+                                "type": "CRDP",
+                                "totalNumber": Math.floor(Math.random() * 50 + 10),
+                                "cumulativeAmount": (Math.random() * 8000 + 2000).toFixed(2),
+                                "detailedAmount": {
+                                    "amountGoodsAndServices": (Math.random() * 7000 + 1800).toFixed(2),
+                                    "cashBack": (Math.random() * 500 + 100).toFixed(2),
+                                    "gratuity": (Math.random() * 500 + 100).toFixed(2)
+                                }
+                            },
+                            {
+                                "POIGroupIdentification": "11000499",
+                                "cardProductProfile": "MASTERCARD_DEBIT",
+                                "currency": "USD",
+                                "type": "CRDP",
+                                "totalNumber": Math.floor(Math.random() * 30 + 5),
+                                "cumulativeAmount": (Math.random() * 4000 + 800).toFixed(2),
+                                "detailedAmount": {
+                                    "amountGoodsAndServices": (Math.random() * 3800 + 750).toFixed(2),
+                                    "gratuity": (Math.random() * 200 + 50).toFixed(2)
+                                }
+                            },
+                            {
+                                "POIGroupIdentification": "11000499",
+                                "cardProductProfile": "VISA_CREDIT",
+                                "currency": "USD",
+                                "type": "RFND",
+                                "totalNumber": Math.floor(Math.random() * 5 + 1),
+                                "cumulativeAmount": (Math.random() * 500 + 100).toFixed(2),
+                                "detailedAmount": {
+                                    "amountGoodsAndServices": (Math.random() * 500 + 100).toFixed(2)
+                                }
+                            }
+                        ]
                     }
                 ]
+            }
+        };
+    }
+    // Handle SETTLE transaction - use batchResponse
+    else if (responseTransactionType === 'Settle') {
+        jsonData.OCserviceResponse.serviceResponse = {
+            "response": {
+                "responseCode": "APPR",
+                "responseReason": ""
+            },
+            "batchResponse": {
+                "dataSource": {
+                    "host": [
+                        {
+                            "cardBrand": "VISA",
+                            "transType": "CRDP",
+                            "count": String(Math.floor(Math.random() * 50 + 10)),
+                            "amount": (Math.random() * 5000 + 1000).toFixed(2)
+                        },
+                        {
+                            "cardBrand": "MASTERCARD",
+                            "transType": "CRDP",
+                            "count": String(Math.floor(Math.random() * 40 + 5)),
+                            "amount": (Math.random() * 4000 + 800).toFixed(2)
+                        },
+                        {
+                            "cardBrand": "VISA",
+                            "transType": "RFND",
+                            "count": String(Math.floor(Math.random() * 5 + 1)),
+                            "amount": (Math.random() * 500 + 100).toFixed(2)
+                        }
+                    ],
+                    "terminal": [
+                        {
+                            "cardBrand": "VISA",
+                            "transType": "CRDP",
+                            "count": String(Math.floor(Math.random() * 55 + 12)),
+                            "amount": (Math.random() * 5500 + 1200).toFixed(2)
+                        },
+                        {
+                            "cardBrand": "MASTERCARD",
+                            "transType": "CRDP",
+                            "count": String(Math.floor(Math.random() * 45 + 8)),
+                            "amount": (Math.random() * 4500 + 900).toFixed(2)
+                        },
+                        {
+                            "cardBrand": "AMEX",
+                            "transType": "CRDP",
+                            "count": String(Math.floor(Math.random() * 10 + 2)),
+                            "amount": (Math.random() * 1500 + 300).toFixed(2)
+                        },
+                        {
+                            "cardBrand": "VISA",
+                            "transType": "RFND",
+                            "count": String(Math.floor(Math.random() * 6 + 1)),
+                            "amount": (Math.random() * 600 + 150).toFixed(2)
+                        }
+                    ]
+                }
             }
         };
         
@@ -1583,45 +1694,51 @@ window.generateResponseJSON = function() {
     }
     // Handle VOID transaction - use reversalResponse
     else if (responseTransactionType === 'Void') {
-        const transactionDateTime = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(); // Yesterday for example
+        const transactionDateTime = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const authCode = String(Math.floor(Math.random() * 900000 + 100000));
         
-        jsonData.OCserviceResponse.serviceResponse.reversalResponse = {
-            "saleTransactionIdentification": {
-                "transactionDateTime": transactionDateTime,
-                "transactionReference": "TXN" + Math.floor(Math.random() * 100000000)
+        jsonData.OCserviceResponse.serviceResponse = {
+            "response": {
+                "responseCode": "APPR",
+                "responseReason": ""
             },
-            "saleReferenceIdentification": "REF" + Math.floor(Math.random() * 100000),
-            "POITransactionIdentification": {
-                "transactionDateTime": transactionDateTime,
-                "transactionReference": "POI" + Math.floor(Math.random() * 100000000)
-            },
-            "reversalTransactionResult": {
-                "transactionResponse": {
-                    "receiptDetails": {
-                        "cardAID": "A0000000031010",
-                        "refId": "R" + Math.floor(Math.random() * 1000000),
-                        "cardDataNtryMd": "05",
-                        "cardLbl": "VISA CREDIT",
-                        "accountType": "CREDIT",
-                        "emvTagCryptogram": "1234567890ABCDEF",
-                        "emvTagTsi": "E800",
-                        "emvTagTvr": "0000008000",
-                        "mskPan": "************1234",
-                        "invoiceNumber": "INV" + Math.floor(Math.random() * 100000),
-                        "hostSequence": String(Math.floor(Math.random() * 10000)),
-                        "hostInvoice": String(Math.floor(Math.random() * 1000000)),
-                        "recordNumber": String(Math.floor(Math.random() * 100000)),
-                        "apprdeclISO": "000"
-                    },
-                    "authorisationResult": {
-                        "authorisationCode": authCode,
-                        "responseToAuthorisation": {
-                            "response": "APPR"
-                        }
-                    }
+            "reversalResponse": {
+                "saleTransactionIdentification": {
+                    "transactionDateTime": transactionDateTime,
+                    "transactionReference": "TXN" + Math.floor(Math.random() * 100000000)
                 },
-                "POIReconciliationIdentification": "BATCH" + Math.floor(Math.random() * 10000)
+                "saleReferenceIdentification": "REF" + Math.floor(Math.random() * 100000),
+                "POITransactionIdentification": {
+                    "transactionDateTime": transactionDateTime,
+                    "transactionReference": "POI" + Math.floor(Math.random() * 100000000)
+                },
+                "reversalTransactionResult": {
+                    "transactionResponse": {
+                        "receiptDetails": {
+                            "cardAID": "A0000000031010",
+                            "refId": "R" + Math.floor(Math.random() * 1000000),
+                            "cardDataNtryMd": "05",
+                            "cardLbl": "VISA CREDIT",
+                            "accountType": "CREDIT",
+                            "emvTagCryptogram": "1234567890ABCDEF",
+                            "emvTagTsi": "E800",
+                            "emvTagTvr": "0000008000",
+                            "mskPan": "************1234",
+                            "invoiceNumber": "INV" + Math.floor(Math.random() * 100000),
+                            "hostSequence": String(Math.floor(Math.random() * 10000)),
+                            "hostInvoice": String(Math.floor(Math.random() * 1000000)),
+                            "recordNumber": String(Math.floor(Math.random() * 100000)),
+                            "apprdeclISO": "000"
+                        },
+                        "authorisationResult": {
+                            "authorisationCode": authCode,
+                            "responseToAuthorisation": {
+                                "response": "APPR"
+                            }
+                        }
+                    },
+                    "POIReconciliationIdentification": "BATCH" + Math.floor(Math.random() * 10000)
+                }
             }
         };
         
@@ -1634,25 +1751,31 @@ window.generateResponseJSON = function() {
             };
         }
     } else {
-        // Standard payment response for non-VOID and non-SETTLE transactions
-        jsonData.OCserviceResponse.serviceResponse.paymentResponse = {
-            "paymentTransaction": {
-                "transactionType": config.transactionType,
-                "transactionIdentification": "TXN" + Math.floor(Math.random() * 100000000),
-                "authorisationCode": String(Math.floor(Math.random() * 900000 + 100000)),
-                "transactionDetails": {
-                    "totalAmount": totalAmount,
-                    "MOTOIndicator": false,
-                    "detailedAmount": {
-                        "amountGoodsAndServices": amount
-                    }
-                },
-                "paymentInstrumentData": {
-                    "paymentInstrumentType": "CARD",
-                    "cardData": {
-                        "entryMode": "CHIP",
-                        "maskedCardNumber": "************1234",
-                        "cardBrand": "VISA"
+        // Standard payment response for non-VOID, non-SETTLE, non-REPORT transactions
+        jsonData.OCserviceResponse.serviceResponse = {
+            "response": {
+                "responseCode": "APPR",
+                "responseReason": ""
+            },
+            "paymentResponse": {
+                "paymentTransaction": {
+                    "transactionType": config.transactionType,
+                    "transactionIdentification": "TXN" + Math.floor(Math.random() * 100000000),
+                    "authorisationCode": String(Math.floor(Math.random() * 900000 + 100000)),
+                    "transactionDetails": {
+                        "totalAmount": totalAmount,
+                        "MOTOIndicator": false,
+                        "detailedAmount": {
+                            "amountGoodsAndServices": amount
+                        }
+                    },
+                    "paymentInstrumentData": {
+                        "paymentInstrumentType": "CARD",
+                        "cardData": {
+                            "entryMode": "CHIP",
+                            "maskedCardNumber": "************1234",
+                            "cardBrand": "VISA"
+                        }
                     }
                 }
             }
