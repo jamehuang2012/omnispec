@@ -1379,13 +1379,22 @@ function renderResponseSpecTree() {
     const responseTransactionType = responseTransactionTypeElement ? responseTransactionTypeElement.value : 'Sale';
     
     // Determine structure based on transaction type
+   // Determine structure based on transaction type
     let structureToShow = 'OCserviceResponse';
+    let displayName = 'OCserviceResponse';
+    
     if (responseTransactionType === 'Void') {
         structureToShow = 'OCserviceResponseReversal';
+        displayName = 'OCserviceResponse';
     } else if (responseTransactionType === 'Settle') {
         structureToShow = 'OCserviceResponseBatch';
+        displayName = 'OCserviceResponse';
     } else if (responseTransactionType === 'Report') {
         structureToShow = 'OCreportResponse';
+        displayName = 'OCreportResponse';
+    } else if (responseTransactionType === 'SessionManagement') {
+        structureToShow = 'OCsessionManagementResponse';
+        displayName = 'OCsessionManagementResponse';
     }
     
     function createNode(name, data, level = 0) {
@@ -1437,7 +1446,6 @@ function renderResponseSpecTree() {
     
     if (specStructure[structureToShow]) {
         // Always display as "OCserviceResponse" even when using different structures
-        const displayName = (responseTransactionType === 'Report') ? 'OCreportResponse' : 'OCserviceResponse';
         createNode(displayName, specStructure[structureToShow]);
     }
 }
@@ -1479,15 +1487,18 @@ window.generateResponseJSON = function() {
     const totalAmount = (parseFloat(amount) + parseFloat(gratuity)).toFixed(2);
     
     // Map response transaction types to codes
-    const responseTransactionConfig = {
+   const responseTransactionConfig = {
         'Sale': { transactionType: 'CRDP', messageFunction: 'AUTP' },
+        'MOTO': { transactionType: 'CRDP', messageFunction: 'AUTP' },
+        'Crypto': { transactionType: 'CRDP', messageFunction: 'CRPP' },
         'Refund': { transactionType: 'RFND', messageFunction: 'RFNP' },
         'PreAuth': { transactionType: 'RESV', messageFunction: 'FAUP' },
         'PreAuthCompletion': { transactionType: 'RESV', messageFunction: 'CMPK' },
         'TipAdjustment': { transactionType: 'CRDP', messageFunction: 'TADK' },
         'Void': { transactionType: 'CRDP', messageFunction: 'FMPK' },
         'Settle': { messageFunction: 'RCLP' },
-        'Report': { messageFunction: 'RPTP' }
+        'Report': { messageFunction: 'RPTP' },
+        'SessionManagement': { messageFunction: 'SASP' }
     };
     
     const config = responseTransactionConfig[responseTransactionType] || responseTransactionConfig['Sale'];
@@ -1751,6 +1762,43 @@ window.generateResponseJSON = function() {
                 "outputContent": receiptContent
             };
         }
+    } else if (responseTransactionType === 'SessionManagement') {
+             const jsonData = {
+                "OCsessionManagementResponse": {
+                    "header": {
+                        "messageFunction": "SASP",
+                        "protocolVersion": "2.0",
+                        "exchangeIdentification": generateUUID(),
+                        "creationDateTime": now,
+                        "initiatingParty": {
+                            "identification": "11000499",
+                            "type": "TID",
+                            "shortName": "Terminal  ID",
+                            "authenticationKey": generateUUID().toUpperCase()
+                        }
+                    },
+                    "sessionManagementResponse": {
+                        "POIComponent": {
+                            "POIIdentification": {
+                                "identification": "11000499",
+                                "serialNumber": "SN" + Math.floor(Math.random() * 1000000)
+                            },
+                            "POIGroupIdentification": {
+                                "exchangeAction": "INIT",
+                                "exchangeType": "NORM"
+                            }
+                        },
+                        "transactionInProcess": {
+                            "transactionStatus": "ACPT",
+                            "exchangeIdentification": "39072dfe-4b5e-4987-acf0-f683a06a9c67"
+                        },
+                        "sessionResponse": {
+                            "response": "APPR",
+                            "responseReason": ""
+                        }
+                    }
+                }
+        };
     } else {
         // Standard payment response for non-VOID, non-SETTLE, non-REPORT transactions
         jsonData.OCserviceResponse.serviceResponse = {

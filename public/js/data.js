@@ -329,9 +329,17 @@ export const codeSets = {
         { code: 'CANC', name: 'Cancellation', desc: 'Cancel transaction' }
     ],
     'CS-ExchangeType': [
-        { code: 'NORM', name: 'Normal', desc: 'Normal exchange' },
-        { code: 'EROR', name: 'Error', desc: 'Error condition' },
-        { code: 'WARN', name: 'Warning', desc: 'Warning condition' }
+       
+        { code: 'ACPT', name: 'Accept', desc: 'Accept the request from terminal' },
+        { code: 'TXNC', name: 'CannotCancel', desc: 'Transaction cannot be cancelled' },
+        { code: 'CMPT', name: 'Completion', desc: 'Register receives the response from terminal and ACK to cloud' },
+        { code: 'DUPL', name: 'Duplication', desc: 'Duplicate transaction found' },
+        { code: 'INIT', name: 'Initiated', desc: 'Cloud receives Auth from register' },
+        { code: 'PEND', name: 'Pending', desc: 'A pending transaction on the cloud' },
+        { code: 'RSPN', name: 'Response', desc: 'Terminal sends response to cloud' },
+        { code: 'TOER', name: 'Timeout', desc: 'Timeout/Expired' },
+        { code: 'TXCN', name: 'TransactionCancelled', desc: 'Transaction has been cancelled' },
+        { code: 'NOTF', name: 'TransactionNotFound', desc: 'Transaction not found' }
     ],
     'CS-State': [
         { code: 'BUSY', name: 'Busy', desc: 'Device is busy' },
@@ -1049,5 +1057,52 @@ export const specStructure = {
                 }
             }
         }
+    },
+    OCsessionManagementResponse: {
+    header: {
+        messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
+        protocolVersion: { type: 'ST-ProtocolVersion', cardinality: '[1..1]' },
+        exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]' },
+        creationDateTime: { type: 'ISODateTime', cardinality: '[1..1]' },
+        initiatingParty: {
+            identification: { type: 'ST-Identification', cardinality: '[1..1]' },
+            type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
+            shortName: { type: 'ST-ShortName', cardinality: '[0..1]' },
+            authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[1..1]' }
+        }
+    },
+    sessionManagementResponse: {
+        POIComponent: {
+            POIIdentification: {
+                identification: { type: 'ST-Identification', cardinality: '[0..1]' },
+                serialNumber: { type: 'ST-SerialNumber', cardinality: '[0..1]' },
+                POICapabilities: { type: 'TextString', cardinality: '[0..1]', desc: 'RFU' }
+            },
+            POIGroupIdentification: {
+                exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]', desc: 'Required for Retrieve/Recover/Cancellation/Notification' },
+                exchangeType: { type: 'ST-ExchangeType', cardinality: '[0..1]' },
+                exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]', desc: 'Required for Retrieve/Recover/Cancellation' },
+                lastHeartbeat: { type: 'ISODateTime', cardinality: '[0..1]', desc: 'Last heartbeat timestamp, only works for Status Check' }
+            }
+        },
+        POSComponent: {
+            cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
+            POSGroupIdentification: {
+                exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]' },
+                exchangeType: { type: 'ST-ExchangeType', cardinality: '[1..1]' },
+                exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]' }
+            }
+        },
+        sessionResponse: {
+            response: { type: 'ST-Response', cardinality: '[1..1]', desc: 'Response from Cloud' },
+            responseReason: { type: 'ST-ResponseReason', cardinality: '[0..1]', desc: 'RFU' },
+            additionalResponseInformation: { type: 'TextString', cardinality: '[0..1]', desc: 'RFU' }
+        },
+        transactionInProcess: {
+            transactionStatus: { type: 'ST-ExchangeType', cardinality: '[1..1]', desc: 'Status for specific transaction' },
+            exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]', desc: 'Transaction Unique ExchangeIdentification' },
+            cancelStatus: { type: 'ST-ExchangeType', cardinality: '[0..1]', desc: 'If a cancel is initiated to the Cloud, it represents the status of the cancellation process' }
+        }
     }
+  }
 };
