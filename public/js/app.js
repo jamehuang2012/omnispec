@@ -1428,6 +1428,20 @@ function renderResponseSpecTree() {
     }
 }
 
+// Handle response transaction type changes to show/hide conditional fields
+window.handleResponseTransactionTypeChange = function() {
+    const responseTransactionType = document.getElementById('responseTransactionType').value;
+    const responseReportTypeGroup = document.querySelector('[data-field="responseReportType"]');
+    
+    // Hide all conditional fields first
+    responseReportTypeGroup.style.display = 'none';
+    
+    // Show Report Type only for REPORT transactions
+    if (responseTransactionType === 'Report') {
+        responseReportTypeGroup.style.display = 'block';
+    }
+};
+
 window.generateResponseJSON = function() {
     const responseTransactionType = document.getElementById('responseTransactionType').value;
     const amount = parseFloat(document.getElementById('responseAmount').value).toFixed(2);

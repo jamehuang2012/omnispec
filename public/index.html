@@ -193,7 +193,7 @@
                 <div class="controls-grid">
                     <div class="control-group">
                         <label for="responseTransactionType">Transaction Type:</label>
-                        <select id="responseTransactionType">
+                        <select id="responseTransactionType" onchange="handleResponseTransactionTypeChange()">
                             <option value="Sale">SALE</option>
                             <option value="MOTO">MOTO</option>
                             <option value="Crypto">CRYPTO</option>
@@ -219,7 +219,7 @@
                         <input type="number" id="responseGratuity" value="0.00" step="0.01" min="0">
                     </div>
                     
-                    <div class="control-group">
+                    <div class="control-group" data-field="responseReportType" style="display: none;">
                         <label for="responseReportType">Report Type:</label>
                         <select id="responseReportType">
                             <option value="HSTS">Host Totals Summary</option>
