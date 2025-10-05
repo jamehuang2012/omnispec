@@ -368,12 +368,12 @@ function generateValueForType(type) {
 }
 
 function generateCodeSetValue(codeSet) {
-    const codeSets = {
-        'CS-VehicleRentalCategoryCode': ['ECAR', 'CCAR', 'ICAR', 'FCAR', 'SCAR'][Math.floor(Math.random() * 5)],
-        'CS-FireSafetyActIndicator': ['Y', 'N'][Math.floor(Math.random() * 2)],
-        'CS-TravelPackageIndicator': ['Y', 'N'][Math.floor(Math.random() * 2)]
-    };
-    return codeSets[codeSet] || 'N/A';
+   if (!codeSets[codeSet]) return 'N/A';
+    
+    const codes = codeSets[codeSet];
+    const randomIndex = Math.floor(Math.random() * codes.length);
+    return codes[randomIndex].code;
+   
 }
 
 function generateVehicleRentalData() {

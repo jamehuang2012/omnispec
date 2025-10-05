@@ -378,7 +378,161 @@ export const codeSets = {
         { code: 'CRCP', name: 'CustomerReceipt', desc: 'When the Sale System requires the terminal system to print the Customer receipt.' },
         { code: 'HRCP', name: 'CashierReceipt', desc: 'When the Sale system print the Cashier copy of the Payment receipt.' },
         { code: 'SRCP', name: 'SaleReceipt', desc: 'When the Sale System requires the terminal system to print the Sale receipt.' }
-    ]
+    ],
+    'CS-AuthenticationEntity': [
+        { code: 'ICCD', name: 'ICC', desc: 'Application in the chip card (Integrated Circuit Card), for instance an offline PIN verification' },
+        { code: 'AGNT', name: 'AuthorizedAgent', desc: 'Authorization agent of the issuer' },
+        { code: 'MERC', name: 'Merchant', desc: 'Merchant (for example signature verification by the attendant)' },
+        { code: 'ACQR', name: 'Acquirer', desc: 'Acquirer of the transaction' },
+        { code: 'ISSR', name: 'Issuer', desc: 'Card issuer' },
+        { code: 'TRML', name: 'Terminal', desc: 'Secure application in the terminal' }
+    ],
+    
+    'CS-AuthenticationMethod': [
+        { code: 'NPIN', name: 'OnlinePIN', desc: 'On-line PIN authentication (Personal Identification Number)' },
+        { code: 'PPSG', name: 'PaperSignature', desc: 'Handwritten paper signature (the merchant verified the handwritten paper signature)' },
+        { code: 'CPSG', name: 'SignatureCapture', desc: 'Electronic signature capture (handwritten signature)' },
+        { code: 'FPIN', name: 'OffLinePIN', desc: 'Off-line PIN authentication (Personal Identification Number)' }
+    ],
+    
+    'CS-VerificationResult': [
+        { code: 'FAIL', name: 'Failed', desc: 'Verification failed' },
+        { code: 'MISS', name: 'Missing', desc: 'Information required to perform the verification was missing' },
+        { code: 'NOVF', name: 'NotPerformed', desc: 'Verification has not been performed' },
+        { code: 'PART', name: 'PartialMatch', desc: 'Verification was partially successful' },
+        { code: 'SUCC', name: 'Successful', desc: 'Verification was successful' },
+        { code: 'ERRR', name: 'TechnicalError', desc: 'Device or entity to perform the verification was unavailable' }
+    ],
+    
+    'CS-BillingAdjustmentIndicator': [
+        { code: 'NONE', name: '', desc: 'No additional charges' },
+        { code: 'CNTF', name: '', desc: 'Additional charges added, customer notified' },
+        { code: 'CNOT', name: '', desc: 'Additional charges added, customer not notified' }
+    ],
+    
+    'CS-TravelPackageIndicator': [
+        { code: 'VRRI', name: 'VehicleReservationIncluded', desc: 'Vehicle rental reservation included' },
+        { code: 'FRNI', name: 'FlightReservationIncluded', desc: 'Airline flight reservation included' },
+        { code: 'VFRI', name: 'VehicleAndFlightReservationIncluded', desc: 'Both vehicle rental and airline flight reservations included' },
+        { code: 'UNKW', name: 'Unknown', desc: 'Unknown' }
+    ],
+    
+    'CS-UnitOfMeasure': [
+        { code: 'PIEC', name: 'Piece', desc: 'Standard length of cloth, wallpaper, as an item for sale or amount of a substance' },
+        { code: 'TONS', name: 'Ton', desc: 'Measure of weight, in Britain 2240lb (long ton) and in the US 2000lb (short ton)' },
+        { code: 'FOOT', name: 'Foot', desc: 'Unit of length equal to 1/3 yard' },
+        { code: 'GBGA', name: 'Imperial Gallon', desc: 'Unit of volume that is equal to 8 pints' },
+        { code: 'USGA', name: 'US Gallon', desc: 'Unit of volume that is equal to 8 pints' },
+        { code: 'GRAM', name: 'Gram', desc: 'Unit of measure that is equal to a 1,000th of a kilo' },
+        { code: 'INCH', name: 'Inch', desc: 'Measure of length equal to 2.54 cm' },
+        { code: 'KILO', name: 'Kilogram', desc: 'Basic unit of mass in the SI system, 1000 grams' },
+        { code: 'PUND', name: 'Pound', desc: 'Unit of weight equal to 0.454 kilograms' },
+        { code: 'METR', name: 'Meter', desc: 'Unit of length in the metric system, equal to 39.37 inches' },
+        { code: 'CMET', name: 'Centimeter', desc: 'Unit of measure that is equal to one hundredth of a meter' },
+        { code: 'MMET', name: 'Millimeter', desc: 'Unit of measure that is a thousandth of one meter' },
+        { code: 'LITR', name: 'Liter', desc: 'Unit of volume that is equal to a thousand cubic centimeters' },
+        { code: 'CELI', name: 'Centiliter', desc: 'Unit of volume that is equal to one hundredth of a liter' },
+        { code: 'MILI', name: 'Milliliter', desc: 'Unit of volume that is equal to one thousandth of a liter' },
+        { code: 'GBOU', name: 'Imperial Ounce', desc: 'Unit of weight equal to a sixteenth of a pound' },
+        { code: 'USOU', name: 'US Ounce', desc: 'Unit of weight equal to a sixteenth of a pound' },
+        { code: 'GBQA', name: 'Imperial Quart', desc: 'Unit of volume that is equal to 2 pints' },
+        { code: 'USQA', name: 'US Quart', desc: 'Unit of volume that is equal to 2 pints' },
+        { code: 'GBPI', name: 'Imperial Pint', desc: 'Unit of volume that is equal to 568 cubic centimeters' },
+        { code: 'USPI', name: 'US Pint', desc: 'Unit of volume that is equal to 473 cubic centimeters' },
+        { code: 'MILE', name: 'Mile', desc: 'Unit of length equal to 1, 760 yards' },
+        { code: 'KMET', name: 'Kilometer', desc: 'Unit of measure that is equal to 1,000 meters' },
+        { code: 'YARD', name: 'Yard', desc: 'Unit of length equal to 3 feet or 0.9144 meter' },
+        { code: 'SQKI', name: 'Square Kilometer', desc: 'Measure of a surface, one kilometer by one kilometer' },
+        { code: 'HECT', name: 'Hectare', desc: 'Unit of measure that is equal to 10,000 square meters' },
+        { code: 'ARES', name: 'Are', desc: 'Unit of measure equal to a 100 square meters' },
+        { code: 'SMET', name: 'Square Meter', desc: 'Measure of a surface, one meter by one meter' },
+        { code: 'SCMT', name: 'Square Centimeter', desc: 'Measure of a surface, one centimeter by one centimeter' },
+        { code: 'SMIL', name: 'Square Millimeter', desc: 'Measure of a surface, one millimeter by one millimeter' },
+        { code: 'SQMI', name: 'Square Mile', desc: 'Measure of a surface, one mile by one mile' },
+        { code: 'SQYA', name: 'Square Yard', desc: 'Measure of a surface, one yard by one yard' },
+        { code: 'SQFO', name: 'Square Foot', desc: 'Measure of a surface, one foot by one foot' },
+        { code: 'SQIN', name: 'Square Inch', desc: 'Measure of a surface, one inch by one inch' },
+        { code: 'ACRE', name: 'Acre', desc: 'Unit of measure equal to 4, 840 square yards' },
+        { code: 'KWHO', name: 'Kilowatt Hours', desc: 'Unit of measure that is equal to the power consumption of one kilowatt during one hour' },
+        { code: 'DGEU', name: 'Diesel Gallon Equivalent', desc: 'Amount of fuel alternative equal to one gallon of diesel' },
+        { code: 'GGEU', name: 'Gasoline Gallon Equivalent', desc: 'Amount of fuel alternative equal to one gallon of gasoline' }
+    ],
+    
+    'CS-VehicleRentalCategoryCode': [
+        { code: '0001', name: '', desc: 'Mini' },
+        { code: '0002', name: '', desc: 'Subcompact' },
+        { code: '0003', name: '', desc: 'Economy' },
+        { code: '0004', name: '', desc: 'Compact' },
+        { code: '0005', name: '', desc: 'Midsize' },
+        { code: '0006', name: '', desc: 'Intermediate' },
+        { code: '0007', name: '', desc: 'Standard' },
+        { code: '0008', name: '', desc: 'Full size' },
+        { code: '0009', name: '', desc: 'Luxury' },
+        { code: '0010', name: '', desc: 'Premium' },
+        { code: '0011', name: '', desc: 'Minivan' },
+        { code: '0012', name: '', desc: '12-passenger van' },
+        { code: '0013', name: '', desc: 'Moving van' },
+        { code: '0014', name: '', desc: '15-passenger van' },
+        { code: '0015', name: '', desc: 'Cargo van special' },
+        { code: '0016', name: '', desc: '12-foot truck' },
+        { code: '0017', name: '', desc: '20-foot truck' },
+        { code: '0018', name: '', desc: '24-foot truck' },
+        { code: '0019', name: '', desc: '26-foot truck' },
+        { code: '0020', name: '', desc: 'Moped' },
+        { code: '0021', name: '', desc: 'Stretch' },
+        { code: '0022', name: '', desc: 'Regular' },
+        { code: '0023', name: '', desc: 'Unique' },
+        { code: '0024', name: '', desc: 'Exotic' },
+        { code: '0025', name: '', desc: 'Small/medium truck' },
+        { code: '0026', name: '', desc: 'Large truck' },
+        { code: '0027', name: '', desc: 'Small SUV' },
+        { code: '0028', name: '', desc: 'Medium SUV' },
+        { code: '0029', name: '', desc: 'Large SUV' },
+        { code: '0030', name: '', desc: 'Exotic SUV' },
+        { code: '0031', name: '', desc: 'Four Wheel Drive' },
+        { code: '0032', name: '', desc: 'Special' },
+        { code: '9999', name: '', desc: 'Other' }
+    ],
+    
+    'CS-FireSafetyActIndicator': [
+        { code: 'NOCP', name: 'NotInCompliance', desc: 'Does not comply with the Hotel and Motel Fire Safety Act of 1990' },
+        { code: 'INCP', name: 'InCompliance', desc: 'Complies with the Hotel and Motel Fire Safety Act of 1990' }
+    ],
+    'CS-IndustryChargeType': [
+    { code: 'ADKM', name: '', desc: 'Additional mileage/kilometrage charge (vehicle rental)' },
+    { code: 'AUVI', name: '', desc: 'Audio visual charges (lodging)' },
+    { code: 'BANQ', name: '', desc: 'Banquet charges (lodging)' },
+    { code: 'BIZC', name: '', desc: 'Business center charges (lodging)' },
+    { code: 'CONF', name: '', desc: 'Conference room charges (lodging)' },
+    { code: 'DELV', name: '', desc: 'Delivery charge (vehicle rental)' },
+    { code: 'DRPO', name: '', desc: 'Drop-off charge (vehicle rental)' },
+    { code: 'EQRN', name: '', desc: 'Equipment rental (vehicle rental)' },
+    { code: 'ERLY', name: '', desc: 'Early departure charges (lodging)' },
+    { code: 'FOOD', name: '', desc: 'Food/Beverage charges (lodging)' },
+    { code: 'FUEL', name: '', desc: 'Fuel charge (vehicle rental)' },
+    { code: 'GIFT', name: '', desc: 'Gift Shop charges (lodging)' },
+    { code: 'GRTT', name: '', desc: 'Gratuity charges (lodging)' },
+    { code: 'HLTH', name: '', desc: 'Health club charges (lodging)' },
+    { code: 'INET', name: '', desc: 'Internet Access charges (lodging)' },
+    { code: 'INSU', name: '', desc: 'Insurance charge (vehicle rental)' },
+    { code: 'LBAR', name: '', desc: 'Lounge/Bar charges (lodging)' },
+    { code: 'LDRY', name: '', desc: 'Laundry and Dry Cleaning Charges (lodging)' },
+    { code: 'LTRT', name: '', desc: 'Late return charge (vehicle rental)' },
+    { code: 'MBAR', name: '', desc: 'Mini-Bar Charges (lodging)' },
+    { code: 'MISC', name: '', desc: 'Miscellaneous charge' },
+    { code: 'MOVI', name: '', desc: 'Movie charges (lodging)' },
+    { code: 'OWSV', name: '', desc: 'One-way service fee (vehicle rental)' },
+    { code: 'PARK', name: '', desc: 'Parking expenses (vehicle rental)' },
+    { code: 'PHON', name: '', desc: 'Phone charges (lodging)' },
+    { code: 'REST', name: '', desc: 'Restaurant Charges (lodging)' },
+    { code: 'RGKM', name: '', desc: 'Regular mileage/kilometrage charge (vehicle rental)' },
+    { code: 'ROOM', name: '', desc: 'Room service charges (lodging)' },
+    { code: 'RPRS', name: '', desc: 'Repairs charge (vehicle rental)' },
+    { code: 'TRAN', name: '', desc: 'Transportation charge (lodging)' },
+    { code: 'VALE', name: '', desc: 'Valet charges (lodging)' },
+    { code: 'VHTW', name: '', desc: 'Vehicle towing charge (vehicle rental)' },
+    { code: 'VLTN', name: '', desc: 'Violation charges (vehicle rental)' }
+]
 };
 
 // Message Specification Structure
