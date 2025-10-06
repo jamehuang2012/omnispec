@@ -819,7 +819,6 @@ export const specStructure = {
                 },
                 POIGroupIdentification: {
                     exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]', desc: 'Required for Retrieve/Recover/Cancellation' },
-                    exchangeType: { type: 'ST-ExchangeType', cardinality: '[0..1]' },
                     exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]', desc: 'Required for Retrieve/Recover/Cancellation' }
                 },
                 state: { type: 'ST-State', cardinality: '[0..1]' }
@@ -828,7 +827,6 @@ export const specStructure = {
                 cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
                 POSGroupIdentification: {
                     exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]' },
-                    exchangeType: { type: 'ST-ExchangeType', cardinality: '[1..1]' },
                     exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]' }
                 },
                 state: { type: 'ST-State', cardinality: '[0..1]', desc: 'BUSY/IDLE required only for exchangeAction is "NOTI"' }
@@ -1243,7 +1241,7 @@ export const specStructure = {
             cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
             POSGroupIdentification: {
                 exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]' },
-                exchangeType: { type: 'ST-ExchangeType', cardinality: '[1..1]' },
+                exchangeType: { type: 'ST-ExchangeType', cardinality: '[0..1]' },
                 exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]' }
             }
         },

@@ -275,7 +275,7 @@ window.handleTransactionTypeChange = function() {
     const reportTypeGroup = document.querySelector('[data-field="reportType"]');
     const sessionTypeGroup = document.querySelector('[data-field="sessionType"]');
     const exchangeActionGroup = document.querySelector('[data-field="exchangeAction"]');
-    const exchangeTypeGroup = document.querySelector('[data-field="exchangeType"]');
+//    const exchangeTypeGroup = document.querySelector('[data-field="exchangeType"]');
     const deviceStateGroup = document.querySelector('[data-field="deviceState"]');
     const exchangeIdentificationGroup = document.querySelector('[data-field="exchangeIdentification"]');
     const originalTransactionIdGroup = document.querySelector('[data-field="originalTransactionId"]');
@@ -479,6 +479,30 @@ function validateJSON(jsonData, rootElementName) {
     
     // Add info about what we're validating
     validationResults.info.push(`Validating against specification: ${rootElementName}`);
+
+
+    // **SPECIAL VALIDATION: Session Management - POIComponent and POSComponent are mutually exclusive**
+    if (rootElementName === 'OCsessionManagementRequest' && data.sessionManagementRequest) {
+        const hasPOIComponent = data.sessionManagementRequest.POIComponent !== undefined && 
+                                data.sessionManagementRequest.POIComponent !== null;
+        const hasPOSComponent = data.sessionManagementRequest.POSComponent !== undefined && 
+                                data.sessionManagementRequest.POSComponent !== null;
+        
+        if (!hasPOIComponent && !hasPOSComponent) {
+            validationResults.errors.push(
+                `OCsessionManagementRequest.sessionManagementRequest: Must contain either POIComponent or POSComponent (exactly one required)`
+            );
+        } else if (hasPOIComponent && hasPOSComponent) {
+            validationResults.errors.push(
+                `OCsessionManagementRequest.sessionManagementRequest: Cannot contain both POIComponent and POSComponent (mutually exclusive - choose one)`
+            );
+        } else if (hasPOIComponent) {
+            validationResults.info.push(`Using POIComponent (Terminal Side) for session management`);
+        } else if (hasPOSComponent) {
+            validationResults.info.push(`Using POSComponent (Register Side) for session management`);
+        }
+    }
+
     
     // Validate the entire structure recursively
     validateNode(data, structure, rootElementName, validationResults);
@@ -500,19 +524,45 @@ function validateNode(data, spec, path, results) {
     if (!spec || typeof spec !== 'object') return;
     
     // List of optional sections that should not trigger "missing required section" errors
+   
+      // Complete list of optional sections that should not trigger "missing required section" errors
     const optionalSections = [
-        'VehicleRentalData',
-        'LodgingData',
-        'TravelData',
-        'DCCRefund',
-        'CruiseData',
-        'DetailedCharge',
-        'RoomDetail',
-        'TripSegment',
-        'PickupLocation',
-        'ReturnLocation',
-        'Property',
-        'TravelAgency'
+        // Industry-Specific Data
+        'VehicleRentalData', 'LodgingData', 'TravelData', 'CruiseData', 'DCCRefund',
+        
+        // Optional nested containers
+        'DetailedCharge', 'RoomDetail', 'TripSegment', 
+        'PickupLocation', 'ReturnLocation', 'Property', 'TravelAgency',
+        
+        // Session Management Components (mutually exclusive)
+        'POIComponent', 'POSComponent',
+        
+        // Request Optional Sections
+        'context', 'saleContext', 'paymentRequest', 'reversalRequest', 
+        'batchRequest', 'reportTransactionRequest', 'reconciliation',
+        
+        // Response Optional Sections
+        'paymentResponse', 'reversalResponse', 'batchResponse', 
+        'reportTransactionResponse', 'receipt', 'Receipt', 'outputContent',
+        
+        // Nested optional structures
+        'saleTransactionIdentification', 'POITransactionIdentification',
+        'retailerPaymentResult', 'transactionResponse', 'receiptDetails',
+        'transactionDetails', 'detailedAmount', 'signatureData',
+        'paymentAccountReference', 'authorisationResult', 
+        'transactionVerificationResult', 'responseToAuthorisation',
+        
+        // Payment Instrument Data
+        'paymentInstrumentData', 'cardData',
+        
+        // Report Response Structures
+        'transactionReport', 'transactionDetailReport', 'transactionTotal',
+        'dataSource', 'host', 'terminal',
+        
+        // Optional identification fields
+        'POIIdentification', 'POIGroupIdentification', 'POSGroupIdentification',
+        'saleReferenceIdentification', 'reversalTransactionResult', 
+        'POIReconciliationIdentification'
     ];
     
     // Validate all fields in the spec, don't stop at first error
@@ -991,7 +1041,7 @@ window.generateJSON = function() {
     } else if (transactionType === 'SessionManagement') {
         const sessionType = document.getElementById('sessionType').value;
         const exchangeAction = document.getElementById('exchangeAction').value;
-        const exchangeType = document.getElementById('exchangeType').value;
+        //const exchangeType = document.getElementById('exchangeType').value;
         const deviceState = document.getElementById('deviceState').value;
         const exchangeIdentificationInput = document.getElementById('exchangeIdentification').value;
         
@@ -1024,9 +1074,9 @@ window.generateJSON = function() {
                 }
             };
             
-            if (exchangeType && exchangeType !== 'NORM') {
-                jsonData[rootElementName].sessionManagementRequest.POIComponent.POIGroupIdentification.exchangeType = exchangeType;
-            }
+            // if (exchangeType && exchangeType !== 'NORM') {
+            //     jsonData[rootElementName].sessionManagementRequest.POIComponent.POIGroupIdentification.exchangeType = exchangeType;
+            // }
             
             if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
                 const exchangeId = exchangeIdentificationInput || generateUUID();
@@ -1048,9 +1098,9 @@ window.generateJSON = function() {
                 jsonData[rootElementName].sessionManagementRequest.POSComponent.cashierIdentification = clerkId;
             }
             
-            if (exchangeType && exchangeType !== 'NORM') {
-                jsonData[rootElementName].sessionManagementRequest.POSComponent.POSGroupIdentification.exchangeType = exchangeType;
-            }
+            // if (exchangeType && exchangeType !== 'NORM') {
+            //     jsonData[rootElementName].sessionManagementRequest.POSComponent.POSGroupIdentification.exchangeType = exchangeType;
+            // }
             
             if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
                 const exchangeId = exchangeIdentificationInput || generateUUID();
