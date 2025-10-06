@@ -284,7 +284,7 @@ window.handleTransactionTypeChange = function() {
     reportTypeGroup.style.display = 'none';
     sessionTypeGroup.style.display = 'none';
     exchangeActionGroup.style.display = 'none';
-    exchangeTypeGroup.style.display = 'none';
+    //exchangeTypeGroup.style.display = 'none';
     deviceStateGroup.style.display = 'none';
     exchangeIdentificationGroup.style.display = 'none';
     originalTransactionIdGroup.style.display = 'none';
@@ -303,7 +303,7 @@ window.handleTransactionTypeChange = function() {
     if (transactionType === 'SessionManagement') {
         sessionTypeGroup.style.display = 'block';
         exchangeActionGroup.style.display = 'block';
-        exchangeTypeGroup.style.display = 'block';
+        //exchangeTypeGroup.style.display = 'block';
         deviceStateGroup.style.display = 'block';
         handleExchangeActionChange();
     }
