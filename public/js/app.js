@@ -1692,7 +1692,7 @@ window.generateResponseJSON = function () {
         jsonData.OCserviceResponse.serviceResponse = {
             response: { responseCode: "APPR", responseReason: "" },
             paymentResponse: {
-                paymentTransaction: {
+                
                     transactionType: config.transactionType,
                     transactionIdentification: "TXN" + Math.floor(Math.random() * 100000000),
                     authorisationCode: String(Math.floor(Math.random() * 900000 + 100000)),
@@ -1708,14 +1708,14 @@ window.generateResponseJSON = function () {
                             cardBrand: "VISA"
                         }
                     }
-                }
+                
             }
         };
         if (gratuity > 0)
-            jsonData.OCserviceResponse.serviceResponse.paymentResponse.paymentTransaction.transactionDetails.detailedAmount.gratuity = gratuity.toFixed(2);
+            jsonData.OCserviceResponse.serviceResponse.paymentResponse.transactionDetails.detailedAmount.gratuity = gratuity.toFixed(2);
 
         if (tokenResponse)
-            jsonData.OCserviceResponse.serviceResponse.paymentResponse.paymentTransaction.paymentInstrumentData.cardData.paymentToken =
+            jsonData.OCserviceResponse.serviceResponse.paymentResponse.paymentInstrumentData.cardData.paymentToken =
                 "TKN" + generateUUID().replace(/-/g, '').substring(0, 32);
 
         if (verbatimReceipt && receiptContent)

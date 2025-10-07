@@ -1232,7 +1232,7 @@ export const specStructure = {
             },
             POIGroupIdentification: {
                 exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]', desc: 'Required for Retrieve/Recover/Cancellation/Notification' },
-                exchangeType: { type: 'ST-ExchangeType', cardinality: '[0..1]' },
+                //exchangeType: { type: 'ST-ExchangeType', cardinality: '[0..1]' },
                 exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]', desc: 'Required for Retrieve/Recover/Cancellation' },
                 lastHeartbeat: { type: 'ISODateTime', cardinality: '[0..1]', desc: 'Last heartbeat timestamp, only works for Status Check' }
             }
@@ -1241,7 +1241,7 @@ export const specStructure = {
             cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
             POSGroupIdentification: {
                 exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]' },
-                exchangeType: { type: 'ST-ExchangeType', cardinality: '[0..1]' },
+                //exchangeType: { type: 'ST-ExchangeType', cardinality: '[0..1]' },
                 exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]' }
             }
         },
