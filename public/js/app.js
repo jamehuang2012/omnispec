@@ -1689,37 +1689,62 @@ window.generateResponseJSON = function () {
     }
     else {
         // Standard transaction (Sale, Refund, etc.)
+        const transactionDateTime = new Date().toISOString();
+        const authCode = String(Math.floor(Math.random() * 900000 + 100000));
+
         jsonData.OCserviceResponse.serviceResponse = {
             response: { responseCode: "APPR", responseReason: "" },
             paymentResponse: {
-                
+                saleTransactionIdentification: {
+                    transactionDateTime: transactionDateTime,
+                    transactionReference: "TXN" + Math.floor(Math.random() * 100000000)
+                },
+                saleReferenceIdentification: "REF" + Math.floor(Math.random() * 100000),
+                POITransactionIdentification: {
+                    transactionDateTime: transactionDateTime,
+                    transactionReference: "POITXN" + Math.floor(Math.random() * 100000000)
+                },
+                retailerPaymentResult: {
                     transactionType: config.transactionType,
-                    transactionIdentification: "TXN" + Math.floor(Math.random() * 100000000),
-                    authorisationCode: String(Math.floor(Math.random() * 900000 + 100000)),
-                    transactionDetails: {
-                        totalAmount: totalAmount,
-                        detailedAmount: { amountGoodsAndServices: amount.toFixed(2) }
-                    },
-                    paymentInstrumentData: {
-                        paymentInstrumentType: "CARD",
-                        cardData: {
-                            entryMode: "CHIP",
-                            maskedCardNumber: "************1234",
-                            cardBrand: "VISA"
+                    transactionResponse: {
+                        receiptDetails: {
+                            cardAID: "A0000000031010",
+                            refId: "REF" + Math.floor(Math.random() * 100000),
+                            cardDataNtryMd: "CHIP",
+                            accountType: "CREDIT",
+                            mskPan: "************1234",
+                            hostSequence: String(Math.floor(Math.random() * 1000)),
+                            hostInvoice: String(Math.floor(Math.random() * 100000)),
+                            recordNumber: String(Math.floor(Math.random() * 100000)),
+                            apprdeclISO: "000"
+                        },
+                        transactionDetails: {
+                            totalAmount: totalAmount,
+                            detailedAmount: { amountGoodsAndServices: amount.toFixed(2) }
+                        },
+                        authorisationResult: {
+                            responseToAuthorisation: {
+                                responseCode: "APPR"
+                            },
+                            authorisationCode: authCode
                         }
                     }
-                
+                },
+                receipt: {
+                    documentQualifier: "CRCP",
+                    integratedPrintFlag: 0,
+                    requiredSignatureFlag: 0,
+                    outputContent: verbatimReceipt && receiptContent ? receiptContent : "*** CUSTOMER RECEIPT ***"
+                }
             }
         };
+
         if (gratuity > 0)
-            jsonData.OCserviceResponse.serviceResponse.paymentResponse.transactionDetails.detailedAmount.gratuity = gratuity.toFixed(2);
+            jsonData.OCserviceResponse.serviceResponse.paymentResponse.retailerPaymentResult.transactionResponse.transactionDetails.detailedAmount.gratuity = gratuity.toFixed(2);
 
         if (tokenResponse)
-            jsonData.OCserviceResponse.serviceResponse.paymentResponse.paymentInstrumentData.cardData.paymentToken =
+            jsonData.OCserviceResponse.serviceResponse.paymentResponse.retailerPaymentResult.transactionResponse.receiptDetails.tokenCUID =
                 "TKN" + generateUUID().replace(/-/g, '').substring(0, 32);
-
-        if (verbatimReceipt && receiptContent)
-            jsonData.OCserviceResponse.serviceResponse.paymentResponse.outputContent = receiptContent;
     }
 
     document.getElementById('responseOutput').textContent = JSON.stringify(jsonData, null, 2);
