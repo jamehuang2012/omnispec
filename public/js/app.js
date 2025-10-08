@@ -1680,7 +1680,6 @@ window.generateResponseJSON = function () {
     }
     else if (responseTransactionType === 'SessionManagement') {
         jsonData.OCsessionManagementResponse.sessionManagementResponse = {
-            response: { responseCode: "APPR", responseReason: "" },
             POIComponent: {
                 POIIdentification: {
                     identification: "11000499",
@@ -1688,7 +1687,10 @@ window.generateResponseJSON = function () {
                 },
                 POIGroupIdentification: { exchangeAction: "NOTI" }
             },
-            state: "IDLE"
+            sessionResponse: {
+                response: "APPR",
+                responseReason: ""
+            }
         };
     }
     else {
