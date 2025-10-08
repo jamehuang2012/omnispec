@@ -535,8 +535,8 @@ function validateNode(data, spec, path, results) {
         'PickupLocation', 'ReturnLocation', 'Property', 'TravelAgency',
         
         // Session Management Components (mutually exclusive)
-        'POIComponent', 'POSComponent',
-        
+        'POIComponent', 'POSComponent', 'transactionInProcess',
+
         // Request Optional Sections
         'context', 'saleContext', 'paymentRequest', 'reversalRequest', 
         'batchRequest', 'reportTransactionRequest', 'reconciliation',
