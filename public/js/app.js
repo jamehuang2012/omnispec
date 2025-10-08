@@ -1250,16 +1250,20 @@ window.validatePayload = function() {
             rootElementName = 'OCsessionManagementRequest';
         } else if (jsonData.OCserviceResponse) {
             rootElementName = 'OCserviceResponse';
+        } else if (jsonData.OCsessionManagementResponse) {
+            rootElementName = 'OCsessionManagementResponse';
+        } else if (jsonData.OCreportResponse) {
+            rootElementName = 'OCreportResponse';
         } else {
             // Try to identify what was provided
             const providedRoots = Object.keys(jsonData).join(', ');
             displayValidationResults({
                 errors: [
-                    `Invalid root element. Expected one of: "OCserviceRequest", "OCreportRequest", "OCsessionManagementRequest", or "OCserviceResponse".`,
+                    `Invalid root element. Expected one of: "OCserviceRequest", "OCreportRequest", "OCsessionManagementRequest", "OCserviceResponse", "OCsessionManagementResponse", or "OCreportResponse".`,
                     providedRoots ? `Found root element(s): ${providedRoots}` : 'No recognized root element found.'
                 ],
                 warnings: [],
-                info: ['Valid root elements are: OCserviceRequest, OCreportRequest, OCsessionManagementRequest, OCserviceResponse']
+                info: ['Valid root elements are: OCserviceRequest, OCreportRequest, OCsessionManagementRequest, OCserviceResponse, OCsessionManagementResponse, OCreportResponse']
             });
             return;
         }
