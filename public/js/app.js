@@ -136,6 +136,53 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
+// Helper functions for enhanced report response generation
+function generateTodayTimestamp() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const hours = String(today.getHours()).padStart(2, '0');
+    const minutes = String(today.getMinutes()).padStart(2, '0');
+    const seconds = String(today.getSeconds()).padStart(2, '0');
+    return `${year}${month}${day}${hours}${minutes}${seconds}`;
+}
+
+function generateYesterdayTimestamp() {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const year = yesterday.getFullYear();
+    const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+    const day = String(yesterday.getDate()).padStart(2, '0');
+    const hours = String(Math.floor(Math.random() * 24)).padStart(2, '0');
+    const minutes = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+    const seconds = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+    return `${year}${month}${day}${hours}${minutes}${seconds}`;
+}
+
+function generateReceiptContent(amount, gratuity, verbatim = false) {
+    const total = (amount + gratuity).toFixed(2);
+    const currentDate = new Date().toLocaleDateString();
+    const currentTime = new Date().toLocaleTimeString();
+    const authCode = Math.floor(100000 + Math.random() * 900000);
+    const cardMask = "************" + Math.floor(1000 + Math.random() * 9000);
+    
+    if (verbatim) {
+        return `         Nuvei         |       5TH FLOOR       |   ONE SMART'S PLACE   |                        |                        | |TERM #          10001887|RECORD #         ${Math.floor(1000000 + Math.random() * 9000000)}|HOST INVOICE #    ${String(Math.floor(1 + Math.random() * 999999)).padStart(6, '0')}|HOST SEQ #    ${Math.floor(1000000000 + Math.random() * 9000000000)}|------------------------|CARD    ${cardMask}|VISA         Contactless|${currentDate.split('/').reverse().join('/')}      ${currentTime}|------------------------||          SALE          |AMOUNT             £${amount.toFixed(2)}|TIP                £${gratuity.toFixed(2)}|TOTAL          GBP £${total}|------------------------|AUTH#:${authCode}       B:${Math.floor(100 + Math.random() * 900)}||      APPROVED 00      |       THANK YOU       | |     NO CARDHOLDER     |      VERIFICATION      || | VISA CL CREDIT          |AID: A0000000031010     |TC: ${generateRandomHex(16)}    |TVR: 0000000000         |TSI: 0000               ||  Retain this copy for  |  statement validation  ||                        |                        |                        |                        |                        |     CUSTOMER COPY     |`;
+    } else {
+        return `*** TRANSACTION RECEIPT ***|${currentDate} ${currentTime}||Amount: £${amount.toFixed(2)}|Tip: £${gratuity.toFixed(2)}|Total: £${total}||Card: ${cardMask}|Auth: ${authCode}||APPROVED - THANK YOU`;
+    }
+}
+
+function generateRandomHex(length) {
+    const chars = '0123456789ABCDEF';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
 function renderSpecTree() {
     const container = document.getElementById('specTree');
     container.innerHTML = '';
@@ -275,7 +322,6 @@ window.handleTransactionTypeChange = function() {
     const reportTypeGroup = document.querySelector('[data-field="reportType"]');
     const sessionTypeGroup = document.querySelector('[data-field="sessionType"]');
     const exchangeActionGroup = document.querySelector('[data-field="exchangeAction"]');
-//    const exchangeTypeGroup = document.querySelector('[data-field="exchangeType"]');
     const deviceStateGroup = document.querySelector('[data-field="deviceState"]');
     const exchangeIdentificationGroup = document.querySelector('[data-field="exchangeIdentification"]');
     const originalTransactionIdGroup = document.querySelector('[data-field="originalTransactionId"]');
@@ -284,7 +330,6 @@ window.handleTransactionTypeChange = function() {
     reportTypeGroup.style.display = 'none';
     sessionTypeGroup.style.display = 'none';
     exchangeActionGroup.style.display = 'none';
-    //exchangeTypeGroup.style.display = 'none';
     deviceStateGroup.style.display = 'none';
     exchangeIdentificationGroup.style.display = 'none';
     originalTransactionIdGroup.style.display = 'none';
@@ -303,7 +348,6 @@ window.handleTransactionTypeChange = function() {
     if (transactionType === 'SessionManagement') {
         sessionTypeGroup.style.display = 'block';
         exchangeActionGroup.style.display = 'block';
-        //exchangeTypeGroup.style.display = 'block';
         deviceStateGroup.style.display = 'block';
         handleExchangeActionChange();
     }
@@ -1041,7 +1085,6 @@ window.generateJSON = function() {
     } else if (transactionType === 'SessionManagement') {
         const sessionType = document.getElementById('sessionType').value;
         const exchangeAction = document.getElementById('exchangeAction').value;
-        //const exchangeType = document.getElementById('exchangeType').value;
         const deviceState = document.getElementById('deviceState').value;
         const exchangeIdentificationInput = document.getElementById('exchangeIdentification').value;
         
@@ -1074,10 +1117,6 @@ window.generateJSON = function() {
                 }
             };
             
-            // if (exchangeType && exchangeType !== 'NORM') {
-            //     jsonData[rootElementName].sessionManagementRequest.POIComponent.POIGroupIdentification.exchangeType = exchangeType;
-            // }
-            
             if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
                 const exchangeId = exchangeIdentificationInput || generateUUID();
                 jsonData[rootElementName].sessionManagementRequest.POIComponent.POIGroupIdentification.exchangeIdentification = exchangeId;
@@ -1097,10 +1136,6 @@ window.generateJSON = function() {
             if (clerkId) {
                 jsonData[rootElementName].sessionManagementRequest.POSComponent.cashierIdentification = clerkId;
             }
-            
-            // if (exchangeType && exchangeType !== 'NORM') {
-            //     jsonData[rootElementName].sessionManagementRequest.POSComponent.POSGroupIdentification.exchangeType = exchangeType;
-            // }
             
             if (['RETR', 'RECV', 'CANC'].includes(exchangeAction)) {
                 const exchangeId = exchangeIdentificationInput || generateUUID();
@@ -1519,7 +1554,9 @@ window.handleResponseTransactionTypeChange = function() {
     // Re-render the spec tree when transaction type changes
     renderResponseSpecTree();
 };
-window.generateResponseJSON = function () {
+
+// Enhanced Response JSON generation with comprehensive report handling
+window.generateResponseJSON = function() {
     const responseTransactionType = document.getElementById('responseTransactionType').value;
     const amountInput = document.getElementById('responseAmount').value || "0";
     const gratuityInput = document.getElementById('responseGratuity').value || "0";
@@ -1530,7 +1567,7 @@ window.generateResponseJSON = function () {
     const tokenResponse = document.getElementById('tokenResponse')?.checked || false;
 
     function generateUUID() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             const r = Math.random() * 16 | 0;
             const v = c === 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
@@ -1541,8 +1578,8 @@ window.generateResponseJSON = function () {
     const totalAmount = (amount + gratuity).toFixed(2);
 
     const receiptContent = verbatimReceipt ? 
-        `MERCHANT NAME|123 Main St|City, State|Tel: 555-1234||${responseTransactionType.toUpperCase()} TRANSACTION|Date: ${new Date().toLocaleDateString()}|Time: ${new Date().toLocaleTimeString()}||Amount: ${amount.toFixed(2)}|Tip: ${gratuity.toFixed(2)}|Total: ${totalAmount}||Card: ************1234|Auth: ${Math.floor(Math.random() * 900000 + 100000)}||APPROVED - THANK YOU|`
-        : undefined;
+        generateReceiptContent(amount, gratuity, true) :
+        generateReceiptContent(amount, gratuity, false);
 
     // Map transaction config
     const responseTransactionConfig = {
@@ -1592,37 +1629,261 @@ window.generateResponseJSON = function () {
         jsonData = { OCserviceResponse: { header: { ...baseHeader, recipientParty } } };
     }
 
-    // === Response Blocks ===
+    // === Enhanced Report Response Generation ===
     if (responseTransactionType === 'Report') {
+        const reportType = document.getElementById('responseReportType')?.value || "PARD";
+        
         jsonData.OCreportResponse.reportResponse = {
-            response: { responseCode: "APPR", responseReason: "" },
-            reportTransactionResponse: {
-                transactionReport: [
-                    {
+            response: { responseCode: "APPR", responseReason: "" }
+        };
+
+        // Generate different report structures based on report type
+        switch (reportType) {
+            case 'TMDR': // Terminal Details Report
+                jsonData.OCreportResponse.reportResponse.reportGetTotalsResponse = {
+                    transactionTotalsSet: [
+                        {
+                            brand: "VISA",
+                            saleIdentification: generateTodayTimestamp() + Math.floor(Math.random() * 1000000),
+                            paymentInstrumentType: "CARD",
+                            transactionDetailReport: {
+                                type: "CRDP",
+                                entryMode: "ECTL",
+                                cardMasked: "************" + Math.floor(1000 + Math.random() * 9000),
+                                detailedAmount: {
+                                    fees: "0.0",
+                                    cashback: "0.0",
+                                    gratuity: gratuity > 0 ? gratuity.toFixed(1) : "0.0"
+                                },
+                                cumulativeAmount: amount.toFixed(1)
+                            },
+                            saleReconciliationIdentification: String(Math.floor(100 + Math.random() * 900))
+                        },
+                        {
+                            brand: "MASTERCARD",
+                            saleIdentification: generateTodayTimestamp() + Math.floor(Math.random() * 1000000),
+                            paymentInstrumentType: "CARD",
+                            transactionDetailReport: {
+                                type: "CRDP",
+                                entryMode: "CHIP",
+                                cardMasked: "************" + Math.floor(1000 + Math.random() * 9000),
+                                detailedAmount: {
+                                    fees: "0.0",
+                                    cashback: "0.0",
+                                    gratuity: "0.0"
+                                },
+                                cumulativeAmount: (amount * 1.5).toFixed(1)
+                            },
+                            saleReconciliationIdentification: String(Math.floor(100 + Math.random() * 900))
+                        }
+                    ]
+                };
+                break;
+
+            case 'TMTS': // Terminal Totals Summary
+                jsonData.OCreportResponse.reportResponse = {
+                    context: {
+                        saleContext: {
+                            invoiceNumber: "123456",
+                            cashierIdentification: ""
+                        }
+                    },
+                    response: "APPR",
+                    environment: {
+                        POI: {
+                            identification: "12000336"
+                        },
+                        merchant: {
+                            identification: "7800199838"
+                        }
+                    },
+                    reportGetTotalsResponse: {
+                        transactionTotalsSet: [
+                            {
+                                brand: "MASTERCARD",
+                                transactionTotal: {
+                                    type: "CRDP",
+                                    totalNumber: "2",
+                                    detailedAmount: {
+                                        fees: "0.00",
+                                        cashback: "0.00",
+                                        gratuity: "2.00"
+                                    },
+                                    cumulativeAmount: "2600.00"
+                                }
+                            },
+                            {
+                                brand: "VISA",
+                                transactionTotal: {
+                                    type: "CRDP",
+                                    totalNumber: "1",
+                                    detailedAmount: {
+                                        fees: "0.00",
+                                        cashback: "0.00",
+                                        gratuity: "2.00"
+                                    },
+                                    cumulativeAmount: "1200.00"
+                                }
+                            },
+                            {
+                                brand: "AMEX",
+                                transactionTotal: {
+                                    type: "CRDP",
+                                    totalNumber: "3",
+                                    detailedAmount: {
+                                        fees: "0.00",
+                                        cashback: "0.00",
+                                        gratuity: "0.00"
+                                    },
+                                    cumulativeAmount: "4100.00"
+                                }
+                            },
+                            {
+                                brand: "JCB",
+                                transactionTotal: {
+                                    type: "CRDP",
+                                    totalNumber: "1",
+                                    detailedAmount: {
+                                        fees: "0.00",
+                                        cashback: "0.00",
+                                        gratuity: "400.00"
+                                    },
+                                    cumulativeAmount: "1400.00"
+                                }
+                            }
+                        ],
+                        POIReconciliationIdentification: "1"
+                    }
+                };
+                break;
+
+            case 'TMSH': // Terminal Sales By Hour
+                jsonData.OCreportResponse.reportResponse = {
+                    context: {
+                        saleContext: {
+                            invoiceNumber: "123456",
+                            cashierIdentification: ""
+                        }
+                    },
+                    response: "APPR",
+                    environment: {
+                        POI: {
+                            identification: "12000336"
+                        },
+                        merchant: {
+                            identification: "7800199838"
+                        }
+                    },
+                    reportGetTotalsResponse: {
+                        transactionTotalsSet: [
+                            {
+                                hour: "11",
+                                transactionTotal: {
+                                    totalNumber: "2",
+                                    detailedAmount: {
+                                        fees: "0",
+                                        cashback: "0",
+                                        gratuity: "4",
+                                        surCharge: "0"
+                                    },
+                                    cumulativeAmount: "2400"
+                                }
+                            }
+                        ],
+                        POIReconciliationIdentification: "1"
+                    }
+                };
+                break;
+
+            case 'PARD': // PreAuth Details Report
+                jsonData.OCreportResponse.reportResponse.reportPreauthResponse = {
+                    preauthTransactionSet: [
+                        {
+                            mskPan: "************6014",
+                            totalAmount: "1.00",
+                            cardDataNtryMd: "ECTL",
+                            saleIdentification: generateTodayTimestamp() + Math.floor(Math.random() * 1000000)
+                        },
+                        {
+                            mskPan: "************6014",
+                            totalAmount: "3.00",
+                            cardDataNtryMd: "ECTL",
+                            saleIdentification: generateYesterdayTimestamp() + Math.floor(Math.random() * 1000000)
+                        },
+                        {
+                            mskPan: "************6014",
+                            totalAmount: "11.00",
+                            cardDataNtryMd: "ECTL",
+                            saleIdentification: generateYesterdayTimestamp() + Math.floor(Math.random() * 1000000)
+                        },
+                        {
+                            mskPan: "************6014",
+                            totalAmount: "1.00",
+                            cardDataNtryMd: "ECTL",
+                            saleIdentification: generateYesterdayTimestamp() + Math.floor(Math.random() * 1000000)
+                        },
+                        {
+                            mskPan: "************6014",
+                            totalAmount: "1.00",
+                            cardDataNtryMd: "ECTL",
+                            saleIdentification: generateYesterdayTimestamp() + Math.floor(Math.random() * 1000000)
+                        }
+                    ]
+                };
+                break;
+
+            case 'TRRP': // Transaction Receipt Reprint
+                jsonData.OCreportResponse.reportResponse.reportTransactionResponse = {
+                    transactionReport: {
                         response: "APPR",
                         paymentResponse: {
-                            receiptDetails: {
-                                cardAID: "A0000000031010",
-                                refId: "R" + Math.floor(Math.random() * 1000000),
-                                balanceDue: "0.00",
-                                cardDataNtryMd: "05",
-                                cardLbl: "VISA CREDIT",
-                                accountType: "CREDIT",
-                                emvTagCryptogram: "1234567890ABCDEF",
-                                emvTagTsi: "E800",
-                                emvTagTvr: "0000008000",
-                                mskPan: "************1234",
-                                invoiceNumber: "INV" + Math.floor(Math.random() * 100000),
-                                hostSequence: String(Math.floor(Math.random() * 10000)),
-                                hostInvoice: String(Math.floor(Math.random() * 1000000)),
-                                recordNumber: String(Math.floor(Math.random() * 100000)),
-                                apprdeclISO: "000"
-                            }
+                            receipt: [
+                                {
+                                    outputContent: receiptContent,
+                                    documentQualifier: "CRCP"
+                                },
+                                {
+                                    outputContent: receiptContent.replace("CUSTOMER COPY", "MERCHANT COPY"),
+                                    documentQualifier: "HRCP"
+                                }
+                            ]
                         }
                     }
-                ]
-            }
-        };
+                };
+                break;
+
+            case 'TMCD': // Terminal Configuration Detail
+                jsonData.OCreportResponse.reportResponse = {
+                    response: {
+                        responseCode: "APPR"
+                    },
+                    reportSetupResponse: {
+                        detailOutput: "Application|Version :     V1.00.09|Build :                4|Receipt Line 1:    Nuvei|Receipt Line 2:5TH FLOOR|Receipt Line|3: ONE SMART'S PLACE|Receipt Line 4:        -|Receipt Line 5:        -||========================================|Host IP Settings|========================================|Host URL: sbxpaynm.nuvei|          .com|Host IP Port:        443|Push Host|Name: terminal-poi-sandb|      ox.nuvei.com|Push Host IP Addr: 18080|Pull Host|Name: terminal-poi-sandb|      ox.nuvei.com|Pull Host IP Addr: 18080||========================================|Option Settings|========================================|Application Mode: RETAIL|Tip :                Yes|Cashback:            Yes|Purch Txn Fee:     £0.00|Network Access Fee:£0.00|Min Amt For|Sale Fee:        £0.00|Max Amt For|Sale Fee:        £0.00|Clerk:                No|Invoice:              No|LocalLogs|Days of|Expiry:             14|Merc Language:        en|Auto Settlement:      No||========================================|IP Comms Settings|========================================|DNS Setup:           Yes|Terminal Type:   Dynamic||========================================|Password Settings|========================================|Void TXN PWD:        Yes|Refund TXN PWD:      Yes|Server Total|Report PWD:          No|PreAuth Report PWD:   No|Open Batch Report PWDYes|Term Config|Report PWD:           No|Server ID Setup PWD:  No|Print Setup PWD:     Yes|Close Batch PWD:     Yes|Manual Entry PWD:    Yes||========================================|Printer Settings|========================================|Receipt Type:     single|Print Merchant:      Yes|Pause between Copies:Yes|Print|Declined|Receipts:            Yes|Print Void Receipts: Yes|Print|Completion|Receipts:           Yes|Footer 1:              -|Footer 2:              -|Footer 3:              -|Footer 4:              -|Footer 5:              -||========================================|Timeout Settings|========================================|Host|Connection|Timeout:            60||IdleActivity|Connection|Timeout:          60"
+                    }
+                };
+                break;
+
+            case 'HSTS': // Host Totals Summary
+            default:
+                jsonData.OCreportResponse.reportResponse.reportGetTotalsResponse = {
+                    transactionTotalsSet: [
+                        {
+                            brand: "VISA",
+                            transactionTotal: {
+                                type: "CRDP",
+                                totalNumber: String(Math.floor(20 + Math.random() * 100)),
+                                detailedAmount: {
+                                    fees: "0.00",
+                                    cashback: "0.00", 
+                                    gratuity: (gratuity * 50).toFixed(2)
+                                },
+                                cumulativeAmount: (amount * 150).toFixed(2)
+                            }
+                        }
+                    ]
+                };
+                break;
+        }
     } 
     else if (responseTransactionType === 'Settle') {
         jsonData.OCserviceResponse.serviceResponse = {
@@ -1740,7 +2001,7 @@ window.generateResponseJSON = function () {
                     documentQualifier: "CRCP",
                     integratedPrintFlag: 0,
                     requiredSignatureFlag: 0,
-                    outputContent: verbatimReceipt && receiptContent ? receiptContent : "*** CUSTOMER RECEIPT ***"
+                    outputContent: receiptContent
                 }
             }
         };

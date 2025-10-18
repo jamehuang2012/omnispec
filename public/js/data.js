@@ -369,7 +369,8 @@ export const codeSets = {
         { code: 'MGST', name: 'MagneticStripe', desc: 'Magnetic stripe' },
         { code: 'CHIP', name: 'ICC', desc: 'Integrated Circuit Card (chip)' },
         { code: 'CTLS', name: 'Contactless', desc: 'Contactless' },
-        { code: 'KEYD', name: 'ManualEntry', desc: 'Manual key entry' }
+        { code: 'KEYD', name: 'ManualEntry', desc: 'Manual key entry' },
+        { code: 'ECTL', name: 'Contactless', desc: 'EMV Contactless' }
     ],
     'CS-PaymentInstrumentType': [
         { code: 'CARD', name: 'Card', desc: 'Payment card' }
@@ -535,7 +536,7 @@ export const codeSets = {
 ]
 };
 
-// Message Specification Structure
+// Enhanced Message Specification Structure with improved response structures
 export const specStructure = {
     OCserviceRequest: {
         header: {
@@ -875,6 +876,7 @@ export const specStructure = {
             }
         }
     },
+    // Enhanced Response Structures
     OCserviceResponse: {
         header: {
             messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
@@ -885,7 +887,7 @@ export const specStructure = {
                 identification: { type: 'ST-Identification', cardinality: '[1..1]' },
                 type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
                 shortName: { type: 'ST-ShortName', cardinality: '[0..1]' },
-                authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[1..1]' }
+                authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[0..1]' }
             },
             recipientParty: {
                 identification: { type: 'ST-Identification', cardinality: '[1..1]' },
@@ -896,7 +898,8 @@ export const specStructure = {
         serviceResponse: {
             response: {
                 responseCode: { type: 'ST-Response', cardinality: '[1..1]' },
-                responseReason: { type: 'ST-ResponseReason', cardinality: '[0..1]' }
+                responseReason: { type: 'ST-ResponseReason', cardinality: '[0..1]' },
+                additionalResponseInformation: { type: 'TextString', cardinality: '[0..1]' }
             },
             paymentResponse: {
                 saleTransactionIdentification: {
@@ -909,11 +912,11 @@ export const specStructure = {
                     transactionReference: { type: 'ST-TransactionReference', cardinality: '[1..1]' }
                 },
                 retailerPaymentResult: {
-                    transactionType: { type: 'ST-TransactionType', cardinality: '[0..1]' },
+                    transactionType: { type: 'ST-TransactionType', cardinality: '[1..1]' },
                     transactionResponse: {
                         receiptDetails: {
                             cardAID: { type: 'TextString', cardinality: '[0..1]' },
-                            refId: { type: 'TextString', cardinality: '[1..1]' },
+                            refId: { type: 'ST-LocalReferenceId', cardinality: '[1..1]' },
                             balanceDue: { type: 'ST-Amount', cardinality: '[0..1]' },
                             cardDataNtryMd: { type: 'TextString', cardinality: '[1..1]' },
                             cardLbl: { type: 'TextString', cardinality: '[0..1]' },
@@ -921,11 +924,11 @@ export const specStructure = {
                             emvTagCryptogram: { type: 'TextString', cardinality: '[0..1]' },
                             emvTagTsi: { type: 'TextString', cardinality: '[0..1]' },
                             emvTagTvr: { type: 'TextString', cardinality: '[0..1]' },
-                            mskPan: { type: 'TextString', cardinality: '[1..1]' },
+                            mskPan: { type: 'ST-MaskedCardNumber', cardinality: '[1..1]' },
                             identificationType: { type: 'ST-IdentificationType', cardinality: '[0..1]' },
                             tokenCUID: { type: 'TextString', cardinality: '[0..1]' },
                             purchaseOrderNumber: { type: 'TextString', cardinality: '[0..1]' },
-                            invoiceNumber: { type: 'TextString', cardinality: '[0..1]' },
+                            invoiceNumber: { type: 'ST-InvoiceNumber', cardinality: '[0..1]' },
                             hostSequence: { type: 'TextString', cardinality: '[1..1]' },
                             hostInvoice: { type: 'TextString', cardinality: '[1..1]' },
                             recordNumber: { type: 'TextString', cardinality: '[1..1]' },
@@ -933,6 +936,7 @@ export const specStructure = {
                         },
                         transactionDetails: {
                             totalAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
+                            cumulativeAmount: { type: 'ST-Amount', cardinality: '[0..1]' },
                             detailedAmount: {
                                 amountGoodsAndServices: { type: 'ST-Amount', cardinality: '[0..1]' },
                                 cashBack: { type: 'ST-Amount', cardinality: '[0..1]' },
@@ -950,9 +954,9 @@ export const specStructure = {
                             authorisationCode: { type: 'ST-AuthorisationCode', cardinality: '[0..1]' }
                         },
                         transactionVerificationResult: {
-                            method: { type: 'TextString', cardinality: '[1..1]' },
+                            method: { type: 'ST-AuthenticationMethod', cardinality: '[1..1]' },
                             verificationEntity: { type: 'ST-AuthenticationEntity', cardinality: '[0..1]' },
-                            result: { type: 'ST-VerificationResult', cardinality: '[0..1]' }
+                            result: { type: 'ST-VerificationResult', cardinality: '[1..1]' }
                         }
                     }
                 },
@@ -983,49 +987,9 @@ export const specStructure = {
             }
         },
         serviceResponse: {
-            environment: {
-                merchant: {
-                    identification: { type: 'ST-Identification', cardinality: '[1..1]' }
-                },
-                POI: {
-                    identification: { type: 'ST-Identification', cardinality: '[1..1]' }
-                }
-            },
-            context: {
-                saleContext: {
-                    saleIdentification: { type: 'ST-SaleIdentification', cardinality: '[0..1]' },
-                    saleReferenceNumber: { type: 'ST-SaleReferenceNumber', cardinality: '[0..1]' },
-                    cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
-                    invoiceNumber: { type: 'ST-InvoiceNumber', cardinality: '[0..1]' }
-                }
-            },
-            serviceContent: { type: 'ST-ServiceContent', cardinality: '[1..1]' },
             response: {
-                result: { type: 'ST-Response', cardinality: '[1..1]' },
+                responseCode: { type: 'ST-Response', cardinality: '[1..1]' },
                 responseReason: { type: 'ST-ResponseReason', cardinality: '[0..1]' }
-            },
-            paymentResponse: {
-                transactionType: { type: 'ST-TransactionType', cardinality: '[1..1]' },
-                transactionIdentification: { type: 'ST-TransactionIdentification', cardinality: '[1..1]' },
-                authorisationCode: { type: 'ST-AuthorisationCode', cardinality: '[0..1]' },
-                transactionDetails: {
-                    totalAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
-                    MOTOIndicator: { type: 'ST-MOTOIndicator', cardinality: '[0..1]' },
-                    detailedAmount: {
-                        amountGoodsAndServices: { type: 'ST-Amount', cardinality: '[1..1]' },
-                        gratuity: { type: 'ST-Amount', cardinality: '[0..1]' }
-                    }
-                },
-                paymentInstrumentData: {
-                    paymentInstrumentType: { type: 'ST-PaymentInstrumentType', cardinality: '[1..1]' },
-                    cardData: {
-                        entryMode: { type: 'ST-EntryMode', cardinality: '[1..1]' },
-                        maskedCardNumber: { type: 'ST-MaskedCardNumber', cardinality: '[0..1]' },
-                        cardBrand: { type: 'ST-CardBrand', cardinality: '[0..1]' },
-                        paymentToken: { type: 'ST-PaymentToken', cardinality: '[0..1]' }
-                    }
-                },
-                outputContent: { type: 'ST-OutputContent', cardinality: '[0..1]' }
             },
             reversalResponse: {
                 saleTransactionIdentification: {
@@ -1087,7 +1051,7 @@ export const specStructure = {
                 identification: { type: 'ST-Identification', cardinality: '[1..1]' },
                 type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
                 shortName: { type: 'ST-ShortName', cardinality: '[0..1]' },
-                authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[1..1]' }
+                authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[0..1]' }
             },
             recipientParty: {
                 identification: { type: 'ST-Identification', cardinality: '[1..1]' },
@@ -1124,6 +1088,7 @@ export const specStructure = {
             }
         }
     },
+    // Enhanced Report Response Structure
     OCreportResponse: {
         header: {
             messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
@@ -1133,12 +1098,11 @@ export const specStructure = {
             initiatingParty: {
                 identification: { type: 'ST-Identification', cardinality: '[1..1]' },
                 type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
-                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' },
-                authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[1..1]' }
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' }
             },
             recipientParty: {
-                identification: { type: 'ST-Identification', cardinality: '[1..1]' },
-                type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
+                identification: { type: 'ST-Identification', cardinality: '[0..1]' },
+                type: { type: 'ST-DeviceType', cardinality: '[0..1]' },
                 shortName: { type: 'ST-ShortName', cardinality: '[0..1]' }
             }
         },
@@ -1147,20 +1111,69 @@ export const specStructure = {
                 responseCode: { type: 'ST-Response', cardinality: '[1..1]' },
                 responseReason: { type: 'ST-ResponseReason', cardinality: '[0..1]' }
             },
+            reportGetTotalsResponse: {
+                transactionTotalsSet: {
+                    brand: { type: 'ST-Brand', cardinality: '[0..1]' },
+                    saleIdentification: { type: 'ST-SaleIdentification', cardinality: '[0..1]' },
+                    paymentInstrumentType: { type: 'ST-PaymentInstrumentType', cardinality: '[0..1]' },
+                    saleReconciliationIdentification: { type: 'ST-SaleReconciliationIdentification', cardinality: '[0..1]' },
+                    hour: { type: 'DigitString', cardinality: '[0..1]', desc: 'Hour for sales by hour reports' },
+                    transactionDetailReport: {
+                        type: { type: 'ST-TransactionType', cardinality: '[1..1]' },
+                        entryMode: { type: 'ST-EntryMode', cardinality: '[0..1]' },
+                        cardMasked: { type: 'ST-MaskedCardNumber', cardinality: '[0..1]' },
+                        POIGroupIdentification: { type: 'ST-Identification', cardinality: '[0..1]' },
+                        cardProductProfile: { type: 'ST-CardProductProfile', cardinality: '[0..1]' },
+                        currency: { type: 'ST-Currency', cardinality: '[0..1]' },
+                        cumulativeAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
+                        detailedAmount: {
+                            fees: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            cashback: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            gratuity: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            amountGoodsAndServices: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            surCharge: { type: 'ST-Amount', cardinality: '[0..1]' }
+                        }
+                    },
+                    transactionTotal: {
+                        type: { type: 'ST-TransactionType', cardinality: '[1..1]' },
+                        totalNumber: { type: 'DigitString', cardinality: '[1..1]' },
+                        POIGroupIdentification: { type: 'ST-Identification', cardinality: '[0..1]' },
+                        cardProductProfile: { type: 'ST-CardProductProfile', cardinality: '[0..1]' },
+                        currency: { type: 'ST-Currency', cardinality: '[0..1]' },
+                        cumulativeAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
+                        detailedAmount: {
+                            fees: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            cashback: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            gratuity: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            amountGoodsAndServices: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            surCharge: { type: 'ST-Amount', cardinality: '[0..1]' }
+                        }
+                    }
+                },
+                POIReconciliationIdentification: { type: 'ST-POIReconciliationID', cardinality: '[0..1]' }
+            },
+            reportPreauthResponse: {
+                preauthTransactionSet: {
+                    mskPan: { type: 'ST-MaskedCardNumber', cardinality: '[1..1]' },
+                    totalAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
+                    cardDataNtryMd: { type: 'ST-EntryMode', cardinality: '[1..1]' },
+                    saleIdentification: { type: 'ST-SaleIdentification', cardinality: '[1..1]' }
+                }
+            },
             reportTransactionResponse: {
                 transactionReport: {
                     response: { type: 'ST-Response', cardinality: '[1..1]' },
                     paymentResponse: {
                         receiptDetails: {
-                            cardAID: { type: 'TextString', cardinality: '[1..1]' },
+                            cardAID: { type: 'TextString', cardinality: '[0..1]' },
                             refId: { type: 'ST-LocalReferenceId', cardinality: '[1..1]' },
-                            balanceDue: { type: 'ST-Amount', cardinality: '[1..1]' },
+                            balanceDue: { type: 'ST-Amount', cardinality: '[0..1]' },
                             cardDataNtryMd: { type: 'TextString', cardinality: '[1..1]' },
-                            cardLbl: { type: 'TextString', cardinality: '[1..1]' },
+                            cardLbl: { type: 'TextString', cardinality: '[0..1]' },
                             accountType: { type: 'TextString', cardinality: '[1..1]' },
-                            emvTagCryptogram: { type: 'TextString', cardinality: '[1..1]' },
-                            emvTagTsi: { type: 'TextString', cardinality: '[1..1]' },
-                            emvTagTvr: { type: 'TextString', cardinality: '[1..1]' },
+                            emvTagCryptogram: { type: 'TextString', cardinality: '[0..1]' },
+                            emvTagTsi: { type: 'TextString', cardinality: '[0..1]' },
+                            emvTagTvr: { type: 'TextString', cardinality: '[0..1]' },
                             mskPan: { type: 'ST-MaskedCardNumber', cardinality: '[1..1]' },
                             identificationType: { type: 'ST-IdentificationType', cardinality: '[0..1]' },
                             tokenCUID: { type: 'TextString', cardinality: '[0..1]' },
@@ -1170,91 +1183,65 @@ export const specStructure = {
                             hostInvoice: { type: 'TextString', cardinality: '[1..1]' },
                             recordNumber: { type: 'TextString', cardinality: '[1..1]' },
                             apprdeclISO: { type: 'TextString', cardinality: '[1..1]' }
-                        }
-                    },
-                    paymentInstrumentType: { type: 'ST-PaymentInstrumentType', cardinality: '[1..1]' },
-                    SaleReconciliationIdentification: { type: 'ST-SaleReconciliationIdentification', cardinality: '[0..1]' },
-                    brand: { type: 'ST-Brand', cardinality: '[0..1]' },
-                    Hour: { type: 'DigitString', cardinality: '[0..1]' },
-                    POIIdentification: { type: 'ST-Identification', cardinality: '[0..1]' },
-                    saleIdentification: { type: 'ST-SaleIdentification', cardinality: '[0..1]' },
-                    cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
-                    transactionDetailReport: {
-                        POIGroupIdentification: { type: 'ST-Identification', cardinality: '[0..1]' },
-                        cardProductProfile: { type: 'ST-CardProductProfile', cardinality: '[0..1]' },
-                        currency: { type: 'ST-Currency', cardinality: '[0..1]' },
-                        entryMode: { type: 'ST-EntryMode', cardinality: '[0..1]' },
-                        cardMasked: { type: 'ST-MaskedCardNumber', cardinality: '[0..1]' },
-                        type: { type: 'ST-TransactionType', cardinality: '[1..1]' },
-                        cumulativeAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
-                        detailedAmount: {
-                            amountGoodsAndServices: { type: 'ST-Amount', cardinality: '[0..1]' },
-                            cashBack: { type: 'ST-Amount', cardinality: '[0..1]' },
-                            gratuity: { type: 'ST-Amount', cardinality: '[0..1]' }
-                        }
-                    },
-                    transactionTotal: {
-                        POIGroupIdentification: { type: 'ST-Identification', cardinality: '[0..1]' },
-                        cardProductProfile: { type: 'ST-CardProductProfile', cardinality: '[0..1]' },
-                        currency: { type: 'ST-Currency', cardinality: '[0..1]' },
-                        type: { type: 'ST-TransactionType', cardinality: '[1..1]' },
-                        totalNumber: { type: 'Number', cardinality: '[1..1]' },
-                        cumulativeAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
-                        detailedAmount: {
-                            amountGoodsAndServices: { type: 'ST-Amount', cardinality: '[0..1]' },
-                            cashBack: { type: 'ST-Amount', cardinality: '[0..1]' },
-                            gratuity: { type: 'ST-Amount', cardinality: '[0..1]' }
+                        },
+                        receipt: {
+                            outputContent: { type: 'ST-OutputContent', cardinality: '[1..1]' },
+                            documentQualifier: { type: 'ST-DocumentQualifier', cardinality: '[1..1]' }
                         }
                     }
                 }
-            }
-        }
-    },
-    OCsessionManagementResponse: {
-    header: {
-        messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
-        protocolVersion: { type: 'ST-ProtocolVersion', cardinality: '[1..1]' },
-        exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]' },
-        creationDateTime: { type: 'ISODateTime', cardinality: '[1..1]' },
-        initiatingParty: {
-            identification: { type: 'ST-Identification', cardinality: '[1..1]' },
-            type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
-            shortName: { type: 'ST-ShortName', cardinality: '[0..1]' },
-            authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[1..1]' }
-        }
-    },
-    sessionManagementResponse: {
-        POIComponent: {
-            POIIdentification: {
-                identification: { type: 'ST-Identification', cardinality: '[0..1]' },
-                serialNumber: { type: 'ST-SerialNumber', cardinality: '[0..1]' },
-                POICapabilities: { type: 'TextString', cardinality: '[0..1]', desc: 'RFU' }
             },
-            POIGroupIdentification: {
-                exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]', desc: 'Required for Retrieve/Recover/Cancellation/Notification' },
-                //exchangeType: { type: 'ST-ExchangeType', cardinality: '[0..1]' },
-                exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]', desc: 'Required for Retrieve/Recover/Cancellation' },
-                lastHeartbeat: { type: 'ISODateTime', cardinality: '[0..1]', desc: 'Last heartbeat timestamp, only works for Status Check' }
+            reportSetupResponse: {
+                detailOutput: { type: 'TextString', cardinality: '[1..1]', desc: 'Terminal configuration details output' }
+            }
+        }
+    },
+    // Enhanced Session Management Response Structure
+    OCsessionManagementResponse: {
+        header: {
+            messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
+            protocolVersion: { type: 'ST-ProtocolVersion', cardinality: '[1..1]' },
+            exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]' },
+            creationDateTime: { type: 'ISODateTime', cardinality: '[1..1]' },
+            initiatingParty: {
+                identification: { type: 'ST-Identification', cardinality: '[1..1]' },
+                type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' },
+                authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[0..1]' }
             }
         },
-        POSComponent: {
-            cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
-            POSGroupIdentification: {
-                exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]' },
-                //exchangeType: { type: 'ST-ExchangeType', cardinality: '[0..1]' },
-                exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]' }
+        sessionManagementResponse: {
+            POIComponent: {
+                POIIdentification: {
+                    identification: { type: 'ST-Identification', cardinality: '[0..1]' },
+                    serialNumber: { type: 'ST-SerialNumber', cardinality: '[0..1]' },
+                    POICapabilities: { type: 'TextString', cardinality: '[0..1]', desc: 'RFU' }
+                },
+                POIGroupIdentification: {
+                    exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]', desc: 'Required for Retrieve/Recover/Cancellation/Notification' },
+                    exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]', desc: 'Required for Retrieve/Recover/Cancellation' },
+                    lastHeartbeat: { type: 'ISODateTime', cardinality: '[0..1]', desc: 'Last heartbeat timestamp, only works for Status Check' }
+                },
+                state: { type: 'ST-State', cardinality: '[0..1]' }
+            },
+            POSComponent: {
+                cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]' },
+                POSGroupIdentification: {
+                    exchangeAction: { type: 'ST-ExchangeAction', cardinality: '[1..1]' },
+                    exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[0..1]' }
+                },
+                state: { type: 'ST-State', cardinality: '[0..1]' }
+            },
+            sessionResponse: {
+                response: { type: 'ST-Response', cardinality: '[1..1]', desc: 'Response from Cloud' },
+                responseReason: { type: 'ST-ResponseReason', cardinality: '[0..1]', desc: 'RFU' },
+                additionalResponseInformation: { type: 'TextString', cardinality: '[0..1]', desc: 'RFU' }
+            },
+            transactionInProcess: {
+                transactionStatus: { type: 'ST-ExchangeType', cardinality: '[1..1]', desc: 'Status for specific transaction' },
+                exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]', desc: 'Transaction Unique ExchangeIdentification' },
+                cancelStatus: { type: 'ST-ExchangeType', cardinality: '[0..1]', desc: 'If a cancel is initiated to the Cloud, it represents the status of the cancellation process' }
             }
-        },
-        sessionResponse: {
-            response: { type: 'ST-Response', cardinality: '[1..1]', desc: 'Response from Cloud' },
-            responseReason: { type: 'ST-ResponseReason', cardinality: '[0..1]', desc: 'RFU' },
-            additionalResponseInformation: { type: 'TextString', cardinality: '[0..1]', desc: 'RFU' }
-        },
-        transactionInProcess: {
-            transactionStatus: { type: 'ST-ExchangeType', cardinality: '[1..1]', desc: 'Status for specific transaction' },
-            exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]', desc: 'Transaction Unique ExchangeIdentification' },
-            cancelStatus: { type: 'ST-ExchangeType', cardinality: '[0..1]', desc: 'If a cancel is initiated to the Cloud, it represents the status of the cancellation process' }
         }
     }
-  }
 };
