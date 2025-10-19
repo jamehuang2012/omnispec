@@ -1091,108 +1091,88 @@ export const specStructure = {
     // Enhanced Report Response Structure
     OCreportResponse: {
         header: {
-            messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]' },
-            protocolVersion: { type: 'ST-ProtocolVersion', cardinality: '[1..1]' },
-            exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]' },
-            creationDateTime: { type: 'ISODateTime', cardinality: '[1..1]' },
+            messageFunction: { type: 'ST-MessageFunction', cardinality: '[1..1]', desc: 'Message function defines what sort of transaction this is. Look into ST_MessageFunction to see all the possible values.' },
+            protocolVersion: { type: 'ST-ProtocolVersion', cardinality: '[1..1]', desc: 'This is informational, use 2.46 or whatever spec version you are currently using. Echoed from request.' },
+            exchangeIdentification: { type: 'ST-ExchangeIdentification', cardinality: '[1..1]', desc: 'This is free format, but we suggest GUID format. This allows you to follow a transaction from start to finish. Used to validate responses to make sure you are getting the right data. (Echoed from request)' },
+            creationDateTime: { type: 'ISODateTime', cardinality: '[1..1]', desc: 'Self-explanatory' },
             initiatingParty: {
-                identification: { type: 'ST-Identification', cardinality: '[1..1]' },
-                type: { type: 'ST-DeviceType', cardinality: '[1..1]' },
-                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' }
+                identification: { type: 'ST-Identification', cardinality: '[1..1]', desc: 'This is the Nuvei supplied device ID. Either a POS system, or a terminal.' },
+                type: { type: 'ST-DeviceType', cardinality: '[1..1]', desc: 'TID for terminals, PID for POS' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]', desc: 'Free Form' },
+                authenticationKey: { type: 'ST-AuthenticationKey', cardinality: '[1..1]', desc: 'This is the device authentication key supplied by Nuvei when the device is boarded in Cloud Service.' }
             },
             recipientParty: {
-                identification: { type: 'ST-Identification', cardinality: '[0..1]' },
-                type: { type: 'ST-DeviceType', cardinality: '[0..1]' },
-                shortName: { type: 'ST-ShortName', cardinality: '[0..1]' }
+                identification: { type: 'ST-Identification', cardinality: '[1..1]', desc: 'This is the Nuvei supplied device ID. Either a POS system, or a terminal.' },
+                type: { type: 'ST-DeviceType', cardinality: '[1..1]', desc: 'TID for terminals, PID for POS' },
+                shortName: { type: 'ST-ShortName', cardinality: '[0..1]', desc: 'Free Form' }
             }
         },
         reportResponse: {
             response: {
-                responseCode: { type: 'ST-Response', cardinality: '[1..1]' },
-                responseReason: { type: 'ST-ResponseReason', cardinality: '[0..1]' }
+                responseCode: { type: 'ST-Response', cardinality: '[1..1]', desc: 'Response code from terminal.' },
+                responseReason: { type: 'ST-ResponseReason', cardinality: '[0..1]', desc: 'Response details.' }
             },
             reportGetTotalsResponse: {
+                POIreconciliationIdentification: { type: 'ST-SaleReconciliationIdentification', cardinality: '[1..1]' },
                 transactionTotalsSet: {
-                    brand: { type: 'ST-Brand', cardinality: '[0..1]' },
+                    paymentInstrumentType: { type: 'ST-PaymentInstrumentType', cardinality: '[1..1]' },
+                    SaleReconciliationIdentification: { type: 'ST-SaleReconciliationIdentification', cardinality: '[0..1]', desc: 'Batch Number' },
+                    brand: { type: 'ST-Brand', cardinality: '[0..1]', desc: 'Card capture capable' },
+                    Hour: { type: 'DigitString', cardinality: '[0..1]' },
+                    POIIdentification: { type: 'ST-Identification', cardinality: '[0..1]' },
                     saleIdentification: { type: 'ST-SaleIdentification', cardinality: '[0..1]' },
-                    paymentInstrumentType: { type: 'ST-PaymentInstrumentType', cardinality: '[0..1]' },
-                    saleReconciliationIdentification: { type: 'ST-SaleReconciliationIdentification', cardinality: '[0..1]' },
-                    hour: { type: 'DigitString', cardinality: '[0..1]', desc: 'Hour for sales by hour reports' },
+                    cashierIdentification: { type: 'ST-CashierIdentification', cardinality: '[0..1]', desc: 'This is a clerk ID. Must be configured on the terminal.' },
                     transactionDetailReport: {
-                        type: { type: 'ST-TransactionType', cardinality: '[1..1]' },
-                        entryMode: { type: 'ST-EntryMode', cardinality: '[0..1]' },
-                        cardMasked: { type: 'ST-MaskedCardNumber', cardinality: '[0..1]' },
                         POIGroupIdentification: { type: 'ST-Identification', cardinality: '[0..1]' },
-                        cardProductProfile: { type: 'ST-CardProductProfile', cardinality: '[0..1]' },
-                        currency: { type: 'ST-Currency', cardinality: '[0..1]' },
-                        cumulativeAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
+                        cardProductProfile: { type: 'ST-CardProductProfile', cardinality: '[0..1]', desc: 'Collection of transactions containing this value sent in the Card.CardProductProfile component of the message request and advice.' },
+                        currency: { type: 'ST-Currency', cardinality: '[0..1]', desc: 'Currency' },
+                        entryMode: { type: 'ST-EntryMode', cardinality: '[0..1]', desc: 'Entry mode' },
+                        cardMasked: { type: 'ST-MaskedCardNumber', cardinality: '[0..1]', desc: 'Mask Pan #' },
+                        type: { type: 'ST-TransactionType', cardinality: '[1..1]', desc: 'All the values are allowed: Debit: Debit transactions (TransactionType is CardPayment, CashBack, CashAdvance, DeferredPayment) including cancelled transactions during the reconciliation period. DebitReverse: Cancelled debit transactions. Credit: Credit transactions (TransactionType is Refund) including cancelled transactions during the reconciliation period. CreditReverse: Cancelled credit transactions. Declined: transactions declined online or offline. Failed: failed transactions.' },
+                        cumulativeAmount: { type: 'ST-Amount', cardinality: '[1..1]', desc: 'Total amount of transactions for the related Type' },
                         detailedAmount: {
-                            fees: { type: 'ST-Amount', cardinality: '[0..1]' },
-                            cashback: { type: 'ST-Amount', cardinality: '[0..1]' },
-                            gratuity: { type: 'ST-Amount', cardinality: '[0..1]' },
-                            amountGoodsAndServices: { type: 'ST-Amount', cardinality: '[0..1]' },
-                            surCharge: { type: 'ST-Amount', cardinality: '[0..1]' }
+                           fees: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            surCharge: { type: 'ST-Amount', cardinality: '[0..1]' },
+   
+                            amountGoodsAndServices: { type: 'ST-Amount', cardinality: '[0..1]', desc: 'Base Amount' },
+
+                            cashBack: { type: 'ST-Amount', cardinality: '[0..1]', desc: 'Cashback Amount' },
+                            gratuity: { type: 'ST-Amount', cardinality: '[0..1]', desc: 'Tip Amount' }
                         }
                     },
                     transactionTotal: {
-                        type: { type: 'ST-TransactionType', cardinality: '[1..1]' },
-                        totalNumber: { type: 'DigitString', cardinality: '[1..1]' },
                         POIGroupIdentification: { type: 'ST-Identification', cardinality: '[0..1]' },
-                        cardProductProfile: { type: 'ST-CardProductProfile', cardinality: '[0..1]' },
+                        cardProductProfile: { type: 'ST-CardProductProfile', cardinality: '[0..1]', desc: 'Collection of transactions containing this value sent in the Card.CardProductProfile component of the message request and advice.' },
                         currency: { type: 'ST-Currency', cardinality: '[0..1]' },
+                        type: { type: 'ST-TransactionType', cardinality: '[1..1]', desc: 'All the values are allowed: Debit: Debit transactions (TransactionType is CardPayment, CashBack, CashAdvance, DeferredPayment) including cancelled transactions during the reconciliation period. DebitReverse: Cancelled debit transactions. Credit: Credit transactions (TransactionType is Refund) including cancelled transactions during the reconciliation period. CreditReverse: Cancelled credit transactions. Declined: transactions declined online or offline. Failed: failed transactions.' },
+                        totalNumber: { type: 'Quantity', cardinality: '[1..1]', desc: 'Total number of transactions for the related Type' },
                         cumulativeAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
                         detailedAmount: {
-                            fees: { type: 'ST-Amount', cardinality: '[0..1]' },
-                            cashback: { type: 'ST-Amount', cardinality: '[0..1]' },
-                            gratuity: { type: 'ST-Amount', cardinality: '[0..1]' },
                             amountGoodsAndServices: { type: 'ST-Amount', cardinality: '[0..1]' },
-                            surCharge: { type: 'ST-Amount', cardinality: '[0..1]' }
+                            cashBack: { type: 'ST-Amount', cardinality: '[0..1]' },
+                            gratuity: { type: 'ST-Amount', cardinality: '[0..1]' }
                         }
                     }
-                },
-                POIReconciliationIdentification: { type: 'ST-POIReconciliationID', cardinality: '[0..1]' }
+                }
             },
             reportPreauthResponse: {
                 preauthTransactionSet: {
-                    mskPan: { type: 'ST-MaskedCardNumber', cardinality: '[1..1]' },
-                    totalAmount: { type: 'ST-Amount', cardinality: '[1..1]' },
-                    cardDataNtryMd: { type: 'ST-EntryMode', cardinality: '[1..1]' },
-                    saleIdentification: { type: 'ST-SaleIdentification', cardinality: '[1..1]' }
+                    mskPan: { type: 'ST-MaskedCardNumber', cardinality: '[1..1]', desc: 'Masked Card #' },
+                    totalAmount: { type: 'ST-Amount', cardinality: '[1..1]', desc: 'Preauth total Amount' },
+                    cardDataNtryMd: { type: 'ST-EntryMode', cardinality: '[1..1]', desc: 'Card Entry Mode 9F39' },
+                    saleIdentification: { type: 'ST-SaleIdentification', cardinality: '[1..1]', desc: 'Local reference number' }
                 }
             },
             reportTransactionResponse: {
                 transactionReport: {
-                    response: { type: 'ST-Response', cardinality: '[1..1]' },
+                    response: { type: 'ST-Response', cardinality: '[1..1]', desc: 'Response code from terminal.' },
                     paymentResponse: {
-                        receiptDetails: {
-                            cardAID: { type: 'TextString', cardinality: '[0..1]' },
-                            refId: { type: 'ST-LocalReferenceId', cardinality: '[1..1]' },
-                            balanceDue: { type: 'ST-Amount', cardinality: '[0..1]' },
-                            cardDataNtryMd: { type: 'TextString', cardinality: '[1..1]' },
-                            cardLbl: { type: 'TextString', cardinality: '[0..1]' },
-                            accountType: { type: 'TextString', cardinality: '[1..1]' },
-                            emvTagCryptogram: { type: 'TextString', cardinality: '[0..1]' },
-                            emvTagTsi: { type: 'TextString', cardinality: '[0..1]' },
-                            emvTagTvr: { type: 'TextString', cardinality: '[0..1]' },
-                            mskPan: { type: 'ST-MaskedCardNumber', cardinality: '[1..1]' },
-                            identificationType: { type: 'ST-IdentificationType', cardinality: '[0..1]' },
-                            tokenCUID: { type: 'TextString', cardinality: '[0..1]' },
-                            purchaseOrderNumber: { type: 'TextString', cardinality: '[0..1]' },
-                            invoiceNumber: { type: 'ST-InvoiceNumber', cardinality: '[0..1]' },
-                            hostSequence: { type: 'TextString', cardinality: '[1..1]' },
-                            hostInvoice: { type: 'TextString', cardinality: '[1..1]' },
-                            recordNumber: { type: 'TextString', cardinality: '[1..1]' },
-                            apprdeclISO: { type: 'TextString', cardinality: '[1..1]' }
-                        },
-                        receipt: {
-                            outputContent: { type: 'ST-OutputContent', cardinality: '[1..1]' },
-                            documentQualifier: { type: 'ST-DocumentQualifier', cardinality: '[1..1]' }
-                        }
+                        receipt: { type: 'TextString', cardinality: '[0..*]', desc: 'Verbatim Receipt' }
                     }
                 }
             },
             reportSetupResponse: {
-                detailOutput: { type: 'TextString', cardinality: '[1..1]', desc: 'Terminal configuration details output' }
+                detailOutput: { type: 'TextString', cardinality: '[1..1]', desc: 'Setup information from terminal' }
             }
         }
     },
