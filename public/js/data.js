@@ -1167,7 +1167,10 @@ export const specStructure = {
                 transactionReport: {
                     response: { type: 'ST-Response', cardinality: '[1..1]', desc: 'Response code from terminal.' },
                     paymentResponse: {
-                        receipt: { type: 'TextString', cardinality: '[0..*]', desc: 'Verbatim Receipt' }
+                        receipt: { 
+                            documentQualifier: { type: 'ST-DocumentQualifier', cardinality: '[1..1]' },
+                            outputContent: { type: 'ST-OutputContent', cardinality: '[1..1]' }
+                        }
                     }
                 }
             },
