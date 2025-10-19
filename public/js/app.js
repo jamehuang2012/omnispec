@@ -1425,9 +1425,10 @@ document.addEventListener('DOMContentLoaded', () => {
     renderBasicTypes();
     generateJSON();
     handleTransactionTypeChange();
-    
+
     renderResponseDataTypes();
     renderResponseSpecTree();
+    handleResponseTransactionTypeChange();
 });
 
 function renderResponseDataTypes() {
