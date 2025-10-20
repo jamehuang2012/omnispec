@@ -206,9 +206,11 @@ function renderSpecTree() {
     function createNode(name, data, level = 0) {
         const div = document.createElement('div');
         div.className = 'tree-node';
-        
+
         const indent = '│  '.repeat(level);
-        const hasChildren = typeof data === 'object' && !data.type;
+        const hasChildren = typeof data === 'object' &&
+                   !(typeof data.type === 'string') &&
+                   Object.keys(data).some(key => key !== 'type' && key !== 'cardinality' && key !== 'desc');
         const toggle = hasChildren ? '▼' : ' ';
         
         let content = `${indent}<span class="tree-toggle">${toggle}</span><span class="tree-field">${name}</span>`;
@@ -216,18 +218,18 @@ function renderSpecTree() {
         if (data.cardinality) {
             content += ` <span class="tree-cardinality">${data.cardinality}</span>`;
         }
-        
-        if (data.type) {
+
+        if (typeof data.type === 'string') {
             content += ` <span class="tree-type clickable-type">${data.type}</span>`;
-            
+
             if (dataTypes[data.type] && dataTypes[data.type].length) {
                 content += ` <span class="tree-constraint">${dataTypes[data.type].length}</span>`;
             }
         }
-        
+
         div.innerHTML = content;
-        
-        if (data.type) {
+
+        if (typeof data.type === 'string') {
             div.classList.add('clickable');
             div.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -240,14 +242,16 @@ function renderSpecTree() {
         }
         
         container.appendChild(div);
-        
+
         if (hasChildren) {
+            // Create child nodes recursively
             Object.keys(data).forEach(key => {
-                if (key !== 'type' && key !== 'cardinality') {
+                if (key !== 'type' && key !== 'cardinality' && key !== 'desc') {
                     createNode(key, data[key], level + 1);
                 }
             });
         }
+
     }
     
     if (specStructure[structureToShow]) {
@@ -1489,28 +1493,30 @@ function renderResponseSpecTree() {
     function createNode(name, data, level = 0) {
         const div = document.createElement('div');
         div.className = 'tree-node';
-        
+
         const indent = '│  '.repeat(level);
-        const hasChildren = typeof data === 'object' && !data.type;
+        const hasChildren = typeof data === 'object' &&
+                   !(typeof data.type === 'string') &&
+                   Object.keys(data).some(key => key !== 'type' && key !== 'cardinality' && key !== 'desc');
         const toggle = hasChildren ? '▼' : ' ';
-        
+
         let content = `${indent}<span class="tree-toggle">${toggle}</span><span class="tree-field">${name}</span>`;
-        
+
         if (data.cardinality) {
             content += ` <span class="tree-cardinality">${data.cardinality}</span>`;
         }
-        
-        if (data.type) {
+
+        if (typeof data.type === 'string') {
             content += ` <span class="tree-type clickable-type">${data.type}</span>`;
-            
+
             if (dataTypes[data.type] && dataTypes[data.type].length) {
                 content += ` <span class="tree-constraint">${dataTypes[data.type].length}</span>`;
             }
         }
-        
+
         div.innerHTML = content;
-        
-        if (data.type) {
+
+        if (typeof data.type === 'string') {
             div.classList.add('clickable');
             div.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1521,16 +1527,19 @@ function renderResponseSpecTree() {
                 }
             });
         }
-        
+
         container.appendChild(div);
-        
+
         if (hasChildren) {
+            // Create child nodes recursively
             Object.keys(data).forEach(key => {
-                if (key !== 'type' && key !== 'cardinality') {
+                if (key !== 'type' && key !== 'cardinality' && key !== 'desc') {
                     createNode(key, data[key], level + 1);
                 }
             });
         }
+
+
     }
     
     if (specStructure[structureToShow]) {
