@@ -210,7 +210,11 @@ function renderSpecTree() {
         const indent = '│  '.repeat(level);
         const hasChildren = typeof data === 'object' &&
                    !(typeof data.type === 'string') &&
-                   Object.keys(data).some(key => key !== 'type' && key !== 'cardinality' && key !== 'desc');
+                   Object.keys(data).some(key => {
+                       if (key === 'cardinality' || key === 'desc') return false;
+                       if (key === 'type' && typeof data.type === 'string') return false;
+                       return true;
+                   });
         const toggle = hasChildren ? '▼' : ' ';
         
         let content = `${indent}<span class="tree-toggle">${toggle}</span><span class="tree-field">${name}</span>`;
@@ -246,7 +250,12 @@ function renderSpecTree() {
         if (hasChildren) {
             // Create child nodes recursively
             Object.keys(data).forEach(key => {
-                if (key !== 'type' && key !== 'cardinality' && key !== 'desc') {
+                // Skip metadata properties (cardinality, desc)
+                // Skip 'type' only if it's a string (metadata), not if it's an object (child field)
+                if (key !== 'cardinality' && key !== 'desc') {
+                    if (key === 'type' && typeof data.type === 'string') {
+                        return; // Skip this - it's metadata
+                    }
                     createNode(key, data[key], level + 1);
                 }
             });
@@ -1497,7 +1506,11 @@ function renderResponseSpecTree() {
         const indent = '│  '.repeat(level);
         const hasChildren = typeof data === 'object' &&
                    !(typeof data.type === 'string') &&
-                   Object.keys(data).some(key => key !== 'type' && key !== 'cardinality' && key !== 'desc');
+                   Object.keys(data).some(key => {
+                       if (key === 'cardinality' || key === 'desc') return false;
+                       if (key === 'type' && typeof data.type === 'string') return false;
+                       return true;
+                   });
         const toggle = hasChildren ? '▼' : ' ';
 
         let content = `${indent}<span class="tree-toggle">${toggle}</span><span class="tree-field">${name}</span>`;
@@ -1533,7 +1546,12 @@ function renderResponseSpecTree() {
         if (hasChildren) {
             // Create child nodes recursively
             Object.keys(data).forEach(key => {
-                if (key !== 'type' && key !== 'cardinality' && key !== 'desc') {
+                // Skip metadata properties (cardinality, desc)
+                // Skip 'type' only if it's a string (metadata), not if it's an object (child field)
+                if (key !== 'cardinality' && key !== 'desc') {
+                    if (key === 'type' && typeof data.type === 'string') {
+                        return; // Skip this - it's metadata
+                    }
                     createNode(key, data[key], level + 1);
                 }
             });
