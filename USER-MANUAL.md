@@ -1,6 +1,6 @@
 # OmniChannel Cloud Integration Specification Demo - User Manual
 
-Version 2.46
+Version 2.48
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -562,7 +562,7 @@ Values must match predefined codes:
   "OCserviceRequest": {
     "header": {
       "messageFunction": "FSPR",
-      "protocolVersion": "2.46",
+      "protocolVersion": "2.48",
       "exchangeIdentification": "<UUID>",
       "creationDateTime": "<ISO DateTime>",
       "initiatingParty": { ... },
@@ -584,7 +584,7 @@ Values must match predefined codes:
   "OCserviceResponse": {
     "header": {
       "messageFunction": "FSPS",
-      "protocolVersion": "2.46",
+      "protocolVersion": "2.48",
       "exchangeIdentification": "<UUID>",
       "creationDateTime": "<ISO DateTime>",
       "initiatingParty": { ... },
@@ -605,7 +605,7 @@ Values must match predefined codes:
 
 ## Specification Version
 
-**Current Version**: 2.46
+**Current Version**: 2.48
 **Last Updated**: October 2024
 
 For specification updates and change logs, consult your integration documentation or contact your payment provider.
@@ -677,7 +677,7 @@ When reporting issues, please include:
   "OCserviceRequest": {
     "header": {
       "messageFunction": "FSPR",
-      "protocolVersion": "2.46",
+      "protocolVersion": "2.48",
       "exchangeIdentification": "550e8400-e29b-41d4-a716-446655440000",
       "creationDateTime": "2024-10-08T14:30:00Z",
       "initiatingParty": {
@@ -717,7 +717,7 @@ When reporting issues, please include:
 
 ## Version History
 
-**v2.46** - October 2024
+**v2.48** - October 2024
 - Initial user manual release
 - Support for all transaction types
 - Enhanced validation with detailed error reporting
