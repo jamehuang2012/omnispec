@@ -711,6 +711,9 @@ export const specStructure = {
                         }
                     }
                 }
+            },
+            signatureRequest: {
+                signaturePrompt: { type: 'TextString', cardinality: '[1..1]' }
             }
         }
     },
@@ -968,6 +971,9 @@ export const specStructure = {
                     requiredSignatureFlag: { type: 'Indicator', cardinality: '[0..1]' },
                     outputContent: { type: 'ST-OutputContent', cardinality: '[1..1]' }
                 }
+            },
+            signatureResponse: {
+                signatureData: { type: 'ST-Signature', cardinality: '[1..1]' }
             }
         }
     },
