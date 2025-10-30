@@ -1027,6 +1027,10 @@ window.generateJSON = function() {
         },
         'SessionManagement': {
             messageFunction: 'SASQ',
+        },
+        'Signature': {
+            messageFunction: 'SGRQ',
+            serviceContent: 'FSPQ'
         }
     };
     
@@ -1218,7 +1222,11 @@ window.generateJSON = function() {
             jsonData[rootElementName].serviceRequest.context.saleContext.identificationType = idType;
         }
         
-        if (config.transactionType) {
+        if (transactionType === 'Signature') {
+            jsonData[rootElementName].serviceRequest.signatureRequest = {
+                "signaturePrompt": "Signature"
+            };
+        } else if (config.transactionType) {
             jsonData[rootElementName].serviceRequest.paymentRequest = {
                 "transactionType": config.transactionType,
                 "transactionDetails": {
@@ -1229,12 +1237,12 @@ window.generateJSON = function() {
                     }
                 }
             };
-            
+
             // Only add gratuity if gratuity > 0 (based on structure)
             if (parseFloat(gratuity) > 0) {
                 jsonData[rootElementName].serviceRequest.paymentRequest.transactionDetails.detailedAmount.gratuity = gratuity;
             }
-            
+
             if (config.serviceAttribute) {
                 jsonData[rootElementName].serviceRequest.paymentRequest.serviceAttribute = config.serviceAttribute;
             }
@@ -1621,7 +1629,8 @@ window.generateResponseJSON = function() {
         'Void': { transactionType: 'CRDP', messageFunction: 'FMPK' },
         'Settle': { messageFunction: 'RCLP' },
         'Report': { messageFunction: 'RPTP' },
-        'SessionManagement': { messageFunction: 'SASP' }
+        'SessionManagement': { messageFunction: 'SASP' },
+        'Signature': { messageFunction: 'SGRP' }
     };
 
     const config = responseTransactionConfig[responseTransactionType] || responseTransactionConfig['Sale'];
@@ -1979,6 +1988,14 @@ window.generateResponseJSON = function() {
             sessionResponse: {
                 response: "APPR",
                 responseReason: ""
+            }
+        };
+    }
+    else if (responseTransactionType === 'Signature') {
+        jsonData.OCserviceResponse.serviceResponse = {
+            response: { responseCode: "APPR", responseReason: "" },
+            signatureResponse: {
+                signatureData: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
             }
         };
     }
