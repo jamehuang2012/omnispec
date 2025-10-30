@@ -1205,12 +1205,11 @@ window.generateJSON = function() {
                             "SaleReconciliationIdentification": ""
                         }
                     },
-                    "serviceContent": config.serviceContent,
-                    "paymentRequest": {}
+                    "serviceContent": config.serviceContent
                 }
             }
         };
-        
+
         // Add optional saleContext fields only if they have values
         if (clerkId) {
             jsonData[rootElementName].serviceRequest.context.saleContext.cashierIdentification = clerkId;
@@ -1221,7 +1220,7 @@ window.generateJSON = function() {
         if (idType) {
             jsonData[rootElementName].serviceRequest.context.saleContext.identificationType = idType;
         }
-        
+
         if (transactionType === 'Signature') {
             jsonData[rootElementName].serviceRequest.signatureRequest = {
                 "signaturePrompt": "Signature"
