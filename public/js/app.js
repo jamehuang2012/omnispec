@@ -540,11 +540,11 @@ function validateJSON(jsonData, rootElementName) {
 
     // **SPECIAL VALIDATION: Session Management - POIComponent and POSComponent are mutually exclusive**
     if (rootElementName === 'OCsessionManagementRequest' && data.sessionManagementRequest) {
-        const hasPOIComponent = data.sessionManagementRequest.POIComponent !== undefined && 
+        const hasPOIComponent = data.sessionManagementRequest.POIComponent !== undefined &&
                                 data.sessionManagementRequest.POIComponent !== null;
-        const hasPOSComponent = data.sessionManagementRequest.POSComponent !== undefined && 
+        const hasPOSComponent = data.sessionManagementRequest.POSComponent !== undefined &&
                                 data.sessionManagementRequest.POSComponent !== null;
-        
+
         if (!hasPOIComponent && !hasPOSComponent) {
             validationResults.errors.push(
                 `OCsessionManagementRequest.sessionManagementRequest: Must contain either POIComponent or POSComponent (exactly one required)`
@@ -557,6 +557,36 @@ function validateJSON(jsonData, rootElementName) {
             validationResults.info.push(`Using POIComponent (Terminal Side) for session management`);
         } else if (hasPOSComponent) {
             validationResults.info.push(`Using POSComponent (Register Side) for session management`);
+        }
+    }
+
+    // **SPECIAL VALIDATION: Service Request - paymentRequest, signatureRequest, reversalRequest, etc. are mutually exclusive**
+    if (rootElementName === 'OCserviceRequest' && data.serviceRequest) {
+        const hasPaymentRequest = data.serviceRequest.paymentRequest !== undefined &&
+                                  data.serviceRequest.paymentRequest !== null;
+        const hasSignatureRequest = data.serviceRequest.signatureRequest !== undefined &&
+                                    data.serviceRequest.signatureRequest !== null;
+        const hasReversalRequest = data.serviceRequest.reversalRequest !== undefined &&
+                                   data.serviceRequest.reversalRequest !== null;
+        const hasReconciliation = data.serviceRequest.reconciliation !== undefined &&
+                                  data.serviceRequest.reconciliation !== null;
+
+        const requestTypes = [];
+        if (hasPaymentRequest) requestTypes.push('paymentRequest');
+        if (hasSignatureRequest) requestTypes.push('signatureRequest');
+        if (hasReversalRequest) requestTypes.push('reversalRequest');
+        if (hasReconciliation) requestTypes.push('reconciliation');
+
+        if (requestTypes.length === 0) {
+            validationResults.errors.push(
+                `OCserviceRequest.serviceRequest: Must contain at least one request type (paymentRequest, signatureRequest, reversalRequest, or reconciliation)`
+            );
+        } else if (requestTypes.length > 1) {
+            validationResults.errors.push(
+                `OCserviceRequest.serviceRequest: Cannot contain multiple request types (found: ${requestTypes.join(', ')}). Use only one.`
+            );
+        } else {
+            validationResults.info.push(`Using ${requestTypes[0]} for this service request`);
         }
     }
 
@@ -595,12 +625,12 @@ function validateNode(data, spec, path, results) {
         'POIComponent', 'POSComponent', 'transactionInProcess',
 
         // Request Optional Sections
-        'context', 'saleContext', 'paymentRequest', 'reversalRequest', 
-        'batchRequest', 'reportTransactionRequest', 'reconciliation',
-        
+        'context', 'saleContext', 'paymentRequest', 'reversalRequest',
+        'batchRequest', 'reportTransactionRequest', 'reconciliation', 'signatureRequest',
+
         // Response Optional Sections
-        'paymentResponse', 'reversalResponse', 'batchResponse', 
-        'reportTransactionResponse', 'receipt', 'Receipt', 'outputContent',
+        'paymentResponse', 'reversalResponse', 'batchResponse',
+        'reportTransactionResponse', 'receipt', 'Receipt', 'outputContent', 'signatureResponse',
         
         // Nested optional structures
         'saleTransactionIdentification', 'POITransactionIdentification',
